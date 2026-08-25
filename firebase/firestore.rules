@@ -1,0 +1,84 @@
+rules_version = '2';
+
+// PeerScholar Firestore security rules.
+// Collections mirror docs/FIRESTORE_SCHEMA.md.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    // Anyone signed in or not can read public profile info (tutor
+    // browsing needs this); only the user can write their own profile.
+    match /profiles/{userId} {
+      allow read: if true;
+      allow write: if isOwner(userId);
+    }
+
+    match /subjects/{subjectId} {
+      allow read: if true;
+      allow write: if false; // managed by admins via the console/scripts
+    }
+
+    // Published courses are public; drafts/pending are visible only to
+    // the tutor who owns them.
+    match /courses/{courseId} {
+      allow read: if resource.data.status == 'published'
+        || (isSignedIn() && resource.data.tutorId == request.auth.uid);
+      allow create: if isSignedIn() && request.resource.data.tutorId == request.auth.uid;
+      allow update, delete: if isSignedIn() && resource.data.tutorId == request.auth.uid;
+
+      match /lessons/{lessonId} {
+        allow read: if true;
+        allow write: if isSignedIn()
+          && get(/databases/$(database)/documents/courses/$(courseId)).data.tutorId == request.auth.uid;
+      }
+    }
+
+    match /enrollments/{enrollmentId} {
+      allow read, write: if isSignedIn() && resource.data.studentId == request.auth.uid;
+      allow create: if isSignedIn() && request.resource.data.studentId == request.auth.uid;
+    }
+
+    match /liveSessions/{sessionId} {
+      allow read: if true;
+      allow create: if isSignedIn() && request.resource.data.tutorId == request.auth.uid;
+      allow update, delete: if isSignedIn() && resource.data.tutorId == request.auth.uid;
+    }
+
+    match /bookings/{bookingId} {
+      allow read: if isSignedIn() && (resource.data.studentId == request.auth.uid);
+      allow create: if isSignedIn() && request.resource.data.studentId == request.auth.uid;
+      allow update: if isSignedIn() && resource.data.studentId == request.auth.uid;
+    }
+
+    // Payments are never written from the client — only from a trusted
+    // Cloud Function once Stripe integration lands (see docs/ROADMAP.md).
+    match /payments/{paymentId} {
+      allow read: if isSignedIn()
+        && (resource.data.payerId == request.auth.uid || resource.data.payeeId == request.auth.uid);
+      allow write: if false;
+    }
+
+    match /reviews/{reviewId} {
+      allow read: if true;
+      allow create: if isSignedIn() && request.resource.data.reviewerId == request.auth.uid;
+      allow update, delete: if isSignedIn() && resource.data.reviewerId == request.auth.uid;
+    }
+
+    match /qaReviews/{qaReviewId} {
+      allow read: if isSignedIn() && resource.data.qaReviewerId == request.auth.uid;
+      allow create: if isSignedIn() && request.resource.data.qaReviewerId == request.auth.uid;
+    }
+
+    match /reports/{reportId} {
+      allow read: if isSignedIn() && resource.data.reporterId == request.auth.uid;
+      allow create: if isSignedIn() && request.resource.data.reporterId == request.auth.uid;
+    }
+  }
+}

@@ -1,0 +1,33 @@
+# Node / web
+node_modules/
+.next/
+out/
+.env
+.env.local
+npm-debug.log*
+
+# Firebase
+.firebase/
+firebase-debug.log
+firestore-debug.log
+
+# iOS
+ios/build/
+ios/DerivedData/
+ios/*.xcuserstate
+ios/**/xcuserdata/
+ios/Pods/
+*.xcworkspace/xcuserdata/
+GoogleService-Info.plist
+
+# Android
+android/.gradle/
+android/build/
+android/app/build/
+android/local.properties
+android/.idea/
+android/*.iml
+google-services.json
+
+# OS
+.DS_Store

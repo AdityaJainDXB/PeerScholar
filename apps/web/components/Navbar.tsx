@@ -1,0 +1,110 @@
+"use client";
+
+import Link from "next/link";
+import Image from "next/image";
+import { useState } from "react";
+import { useAuth } from "@/lib/AuthProvider";
+import { signInWithGoogle, signOutOfFirebase, isFirebaseConfigured } from "@/lib/firebaseClient";
+
+const links = [
+  { href: "/browse", label: "Browse" },
+  { href: "/dashboard/student", label: "My Learning" },
+  { href: "/dashboard/tutor", label: "Teach" },
+  { href: "/admin/qa", label: "QA Queue" },
+];
+
+export default function Navbar() {
+  const { user, loading } = useAuth();
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function handleSignIn() {
+    setError(null);
+    setBusy(true);
+    try {
+      await signInWithGoogle();
+    } catch (e) {
+      setError(isFirebaseConfigured ? "Sign-in failed. Try again." : "Connect Firebase first — see README.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <header className="sticky top-0 z-50 border-b border-slate-200/80 bg-white/80 backdrop-blur">
+      <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3.5">
+        <Link href="/" className="flex items-center gap-2 text-lg font-bold text-slate-900">
+          <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-brand-500 to-brand-700 text-sm font-extrabold text-white shadow-sm">
+            PS
+          </span>
+          PeerScholar
+        </Link>
+        <nav className="hidden items-center gap-7 text-sm font-medium text-slate-600 md:flex">
+          {links.map((l) => (
+            <Link key={l.href} href={l.href} className="transition hover:text-brand-700">
+              {l.label}
+            </Link>
+          ))}
+        </nav>
+
+        <div className="flex items-center gap-3">
+          {error && <span className="hidden text-xs text-rose-600 sm:inline">{error}</span>}
+          {!loading && user ? (
+            <div className="flex items-center gap-2">
+              {user.photoURL && (
+                <Image
+                  src={user.photoURL}
+                  alt={user.displayName ?? "You"}
+                  width={28}
+                  height={28}
+                  className="rounded-full"
+                />
+              )}
+              <span className="hidden text-sm font-medium text-slate-700 sm:inline">
+                {user.displayName?.split(" ")[0]}
+              </span>
+              <button
+                onClick={() => signOutOfFirebase()}
+                className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm font-medium text-slate-600 hover:bg-slate-50"
+              >
+                Sign out
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={handleSignIn}
+              disabled={busy}
+              className="flex items-center gap-2 rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-700 disabled:opacity-60"
+            >
+              <GoogleIcon />
+              {busy ? "Signing in…" : "Sign in with Google"}
+            </button>
+          )}
+        </div>
+      </div>
+    </header>
+  );
+}
+
+function GoogleIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 48 48" aria-hidden="true">
+      <path
+        fill="#FFC107"
+        d="M43.6 20.5H42V20H24v8h11.3c-1.6 4.6-6 8-11.3 8-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.6 6.1 29.6 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.7-.4-3.5z"
+      />
+      <path
+        fill="#FF3D00"
+        d="M6.3 14.7l6.6 4.8C14.6 15.9 18.9 13 24 13c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.6 6.1 29.6 4 24 4 16.3 4 9.6 8.3 6.3 14.7z"
+      />
+      <path
+        fill="#4CAF50"
+        d="M24 44c5.5 0 10.4-1.9 14.1-5.1l-6.5-5.5c-2 1.5-4.6 2.6-7.6 2.6-5.3 0-9.7-3.4-11.3-8.1l-6.6 5.1C9.5 39.6 16.2 44 24 44z"
+      />
+      <path
+        fill="#1976D2"
+        d="M43.6 20.5H42V20H24v8h11.3c-.8 2.3-2.2 4.2-4.1 5.5l6.5 5.5C41.6 35.8 44 30.3 44 24c0-1.3-.1-2.7-.4-3.5z"
+      />
+    </svg>
+  );
+}
