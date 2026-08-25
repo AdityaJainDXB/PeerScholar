@@ -6,11 +6,15 @@ struct TutorProfileView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
-                VStack(alignment: .leading, spacing: 6) {
-                    Text(tutor.fullName).font(.title2.bold())
-                    RatingStars(rating: tutor.ratingAvg, count: tutor.ratingCount)
-                    Text(tutor.bio).font(.subheadline).foregroundStyle(.secondary)
+                HStack(spacing: 14) {
+                    AvatarImage(seed: tutor.id, size: 72)
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text(tutor.fullName).font(.title2.bold())
+                        RatingStars(rating: tutor.ratingAvg, count: tutor.ratingCount)
+                    }
                 }
+                .appearAnimation()
+                Text(tutor.bio).font(.subheadline).foregroundStyle(.secondary)
 
                 let sessions = MockData.liveSessions.filter { $0.tutorId == tutor.id }
                 if !sessions.isEmpty {
@@ -26,7 +30,7 @@ struct TutorProfileView: View {
                         Text("Courses").font(.headline)
                         ForEach(courses) { course in
                             NavigationLink(value: course.id) { CourseRow(course: course) }
-                                .buttonStyle(.plain)
+                                .buttonStyle(ScaleButtonStyle())
                         }
                     }
                 }

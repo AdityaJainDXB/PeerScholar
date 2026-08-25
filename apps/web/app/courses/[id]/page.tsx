@@ -44,8 +44,22 @@ export default function CourseDetailPage({ params }: { params: { id: string } })
           </p>
           <p className="mt-4 text-slate-700">{course.description}</p>
 
-          <div className="mt-8 flex aspect-video items-center justify-center rounded-xl bg-slate-900 text-slate-300">
-            {lessons[0]?.isPreview ? "Preview: Lesson 1 video player" : "Enroll to watch"}
+          <div className="group relative mt-8 aspect-video overflow-hidden rounded-xl bg-slate-900">
+            <img
+              src={`https://picsum.photos/seed/${course.id}/900/500`}
+              alt=""
+              className="h-full w-full object-cover opacity-60 transition duration-500 group-hover:scale-105"
+            />
+            <div className="absolute inset-0 flex items-center justify-center">
+              <span className="flex h-16 w-16 items-center justify-center rounded-full bg-white/90 text-brand-700 shadow-lg transition group-hover:scale-110">
+                <svg viewBox="0 0 24 24" fill="currentColor" className="ml-1 h-7 w-7">
+                  <path d="M8 5v14l11-7z" />
+                </svg>
+              </span>
+            </div>
+            <p className="absolute bottom-3 left-4 text-sm font-medium text-white drop-shadow">
+              {lessons[0]?.isPreview ? "Preview: Lesson 1" : "Enroll to watch"}
+            </p>
           </div>
 
           <section className="mt-10">

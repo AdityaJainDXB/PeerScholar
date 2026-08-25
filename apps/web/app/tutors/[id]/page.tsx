@@ -19,10 +19,12 @@ export default function TutorProfilePage({ params }: { params: { id: string } })
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-12">
-      <div className="flex items-start gap-4">
-        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-brand-100 text-xl font-semibold text-brand-700">
-          {tutor.fullName.split(" ").map((n) => n[0]).join("")}
-        </div>
+      <div className="animate-fade-in-up flex items-start gap-4">
+        <img
+          src={`https://i.pravatar.cc/160?u=${tutor.id}`}
+          alt={tutor.fullName}
+          className="h-16 w-16 rounded-full object-cover shadow-sm ring-2 ring-white"
+        />
         <div className="flex-1">
           <div className="flex items-center gap-2">
             <h1 className="text-2xl font-bold text-slate-900">{tutor.fullName}</h1>

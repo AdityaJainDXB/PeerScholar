@@ -2,13 +2,23 @@ package org.peerscholar.app.ui.screens
 
 import android.content.ClipData
 import android.content.ClipboardManager
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -17,7 +27,9 @@ import androidx.compose.ui.unit.dp
 import org.peerscholar.app.auth.AuthViewModel
 import org.peerscholar.app.auth.ViewMode
 import org.peerscholar.app.data.MockData
+import org.peerscholar.app.ui.components.Avatar
 import org.peerscholar.app.ui.components.Card
+import org.peerscholar.app.ui.components.Thumbnail
 import org.peerscholar.app.ui.theme.Brand600
 import java.text.DateFormat
 
@@ -34,10 +46,14 @@ fun DashboardScreen(authViewModel: AuthViewModel) {
             Spacer(Modifier.height(16.dp))
         }
 
-        if (state.isSignedIn && state.viewMode == ViewMode.TEACHER) {
-            TeacherDashboard()
-        } else {
-            LearnerDashboard()
+        AnimatedContent(
+            targetState = state.isSignedIn && state.viewMode == ViewMode.TEACHER,
+            transitionSpec = { fadeIn(tween(250)) togetherWith fadeOut(tween(150)) },
+            label = "dashboardMode",
+        ) { showTeacher ->
+            Column {
+                if (showTeacher) TeacherDashboard() else LearnerDashboard()
+            }
         }
     }
 }
@@ -77,12 +93,16 @@ private fun LearnerDashboard() {
     MockData.liveSessions.forEach { s ->
         Card(Modifier) {
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                Column(Modifier.weight(1f)) {
-                    Text(s.title, style = MaterialTheme.typography.titleMedium)
-                    Text(
-                        "with ${s.tutorName} · ${DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT).format(s.scheduledAt)}",
-                        style = MaterialTheme.typography.bodySmall,
-                    )
+                Row(Modifier.weight(1f), verticalAlignment = Alignment.CenterVertically) {
+                    Avatar(s.tutorId, size = 40)
+                    Spacer(Modifier.width(10.dp))
+                    Column {
+                        Text(s.title, style = MaterialTheme.typography.titleMedium)
+                        Text(
+                            "with ${s.tutorName} · ${DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT).format(s.scheduledAt)}",
+                            style = MaterialTheme.typography.bodySmall,
+                        )
+                    }
                 }
                 if (s.joinUrl != null) {
                     Button(onClick = {}, colors = ButtonDefaults.buttonColors(containerColor = Brand600)) {
@@ -100,12 +120,16 @@ private fun LearnerDashboard() {
     MockData.courses.take(3).forEachIndexed { index, course ->
         val progress = listOf(0.62f, 0.18f, 0.90f)[index % 3]
         Card(Modifier) {
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                Text(course.title, style = MaterialTheme.typography.titleMedium)
-                Text("${(progress * 100).toInt()}%", style = MaterialTheme.typography.bodySmall)
+            Column {
+                Thumbnail(course.id, height = 90, badge = course.subject)
+                Spacer(Modifier.height(10.dp))
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                    Text(course.title, style = MaterialTheme.typography.titleMedium)
+                    Text("${(progress * 100).toInt()}%", style = MaterialTheme.typography.bodySmall)
+                }
+                Spacer(Modifier.height(6.dp))
+                LinearProgressIndicator(progress = { progress }, color = Brand600, modifier = Modifier.fillMaxWidth())
             }
-            Spacer(Modifier.height(6.dp))
-            LinearProgressIndicator(progress = { progress }, color = Brand600, modifier = Modifier.fillMaxWidth())
         }
         Spacer(Modifier.height(8.dp))
     }
@@ -148,15 +172,22 @@ private fun TeacherDashboard() {
     Spacer(Modifier.height(16.dp))
     Text("Earnings, last 6 weeks", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
     Spacer(Modifier.height(8.dp))
+    var chartGrown by remember { mutableStateOf(false) }
+    LaunchedEffect(Unit) { chartGrown = true }
     Card(Modifier) {
         Row(Modifier.fillMaxWidth().height(110.dp), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.Bottom) {
             MockData.earningsHistory.forEach { week ->
                 Column(Modifier.weight(1f), horizontalAlignment = Alignment.CenterHorizontally) {
                     val heightRatio = week.cents.toFloat() / maxWeekly
+                    val animatedHeight by animateFloatAsState(
+                        targetValue = if (chartGrown) 80 * heightRatio else 0f,
+                        animationSpec = tween(600),
+                        label = "barHeight",
+                    )
                     Box(
                         Modifier
                             .fillMaxWidth()
-                            .height((80 * heightRatio).dp)
+                            .height(animatedHeight.dp)
                             .background(Brand600, shape = androidx.compose.foundation.shape.RoundedCornerShape(4.dp))
                     )
                     Spacer(Modifier.height(4.dp))
@@ -171,8 +202,14 @@ private fun TeacherDashboard() {
     Spacer(Modifier.height(8.dp))
     topSelling.forEachIndexed { index, course ->
         Card(Modifier) {
-            Text("${index + 1}. ${course.title}", style = MaterialTheme.typography.titleMedium)
-            Text("${course.enrollmentCount} enrolled · ${course.priceDisplay}", style = MaterialTheme.typography.bodySmall)
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Avatar(course.id, size = 40)
+                Spacer(Modifier.width(10.dp))
+                Column {
+                    Text("${index + 1}. ${course.title}", style = MaterialTheme.typography.titleMedium)
+                    Text("${course.enrollmentCount} enrolled · ${course.priceDisplay}", style = MaterialTheme.typography.bodySmall)
+                }
+            }
         }
         Spacer(Modifier.height(8.dp))
     }
@@ -183,9 +220,13 @@ private fun TeacherDashboard() {
     mySessions.forEach { s ->
         Card(Modifier) {
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                Column {
-                    Text(s.title, style = MaterialTheme.typography.titleMedium)
-                    Text("${s.bookedCount}/${s.maxParticipants} booked", style = MaterialTheme.typography.bodySmall)
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Avatar(s.id, size = 36)
+                    Spacer(Modifier.width(10.dp))
+                    Column {
+                        Text(s.title, style = MaterialTheme.typography.titleMedium)
+                        Text("${s.bookedCount}/${s.maxParticipants} booked", style = MaterialTheme.typography.bodySmall)
+                    }
                 }
                 if (s.joinUrl != null) {
                     TextButton(onClick = {

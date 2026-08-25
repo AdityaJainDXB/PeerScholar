@@ -54,7 +54,9 @@ export default function Navbar() {
               <Link
                 key={l.href}
                 href={l.href}
-                className={`transition hover:text-brand-700 ${active ? "text-brand-700" : ""}`}
+                className={`relative py-1 transition-colors hover:text-brand-700 after:absolute after:-bottom-1 after:left-0 after:h-0.5 after:rounded-full after:bg-brand-600 after:transition-all after:duration-300 ${
+                  active ? "text-brand-700 after:w-full" : "after:w-0"
+                }`}
               >
                 {l.label}
               </Link>
@@ -66,19 +68,23 @@ export default function Navbar() {
           {error && <span className="hidden text-xs text-rose-600 sm:inline">{error}</span>}
 
           {!loading && user && (
-            <div className="flex items-center rounded-full bg-slate-100 p-0.5 text-xs font-semibold">
+            <div className="relative flex items-center rounded-full bg-slate-100 p-0.5 text-xs font-semibold">
+              <span
+                className="absolute inset-y-0.5 w-[calc(50%-2px)] rounded-full bg-white shadow-sm transition-transform duration-300 ease-out"
+                style={{ transform: viewMode === "teacher" ? "translateX(calc(100% + 4px))" : "translateX(0)" }}
+              />
               <button
                 onClick={() => setViewMode("learner")}
-                className={`rounded-full px-3 py-1.5 transition ${
-                  viewMode === "learner" ? "bg-white text-slate-900 shadow-sm" : "text-slate-500 hover:text-slate-700"
+                className={`relative z-10 rounded-full px-3 py-1.5 transition-colors duration-300 ${
+                  viewMode === "learner" ? "text-slate-900" : "text-slate-500 hover:text-slate-700"
                 }`}
               >
                 Learner
               </button>
               <button
                 onClick={() => setViewMode("teacher")}
-                className={`rounded-full px-3 py-1.5 transition ${
-                  viewMode === "teacher" ? "bg-white text-slate-900 shadow-sm" : "text-slate-500 hover:text-slate-700"
+                className={`relative z-10 rounded-full px-3 py-1.5 transition-colors duration-300 ${
+                  viewMode === "teacher" ? "text-slate-900" : "text-slate-500 hover:text-slate-700"
                 }`}
               >
                 Teacher

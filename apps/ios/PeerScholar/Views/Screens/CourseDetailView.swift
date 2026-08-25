@@ -14,10 +14,14 @@ struct CourseDetailView: View {
                 Text("by \(course.tutorName)").font(.footnote).foregroundStyle(.secondary)
                 Text(course.description).font(.subheadline)
 
-                RoundedRectangle(cornerRadius: 14)
-                    .fill(Color.black)
-                    .frame(height: 180)
-                    .overlay(Text("Preview: Lesson 1 video player").foregroundStyle(.white.opacity(0.7)).font(.footnote))
+                ZStack {
+                    Thumbnail(seed: course.id, height: 180)
+                    Image(systemName: "play.circle.fill")
+                        .font(.system(size: 48))
+                        .foregroundStyle(.white)
+                        .shadow(radius: 6)
+                }
+                .appearAnimation()
 
                 VStack(alignment: .leading, spacing: 8) {
                     Text("Curriculum — \(course.lessonCount) lessons").font(.headline)

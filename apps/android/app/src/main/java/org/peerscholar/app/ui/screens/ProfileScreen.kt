@@ -4,6 +4,9 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.*
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
+import coil.compose.AsyncImage
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -27,10 +30,19 @@ fun ProfileScreen(authViewModel: AuthViewModel) {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ) {
-        Box(
-            Modifier.size(72.dp).background(Color.LightGray, CircleShape),
-            contentAlignment = Alignment.Center,
-        ) { Text(if (state.isSignedIn) "" else "You") }
+        if (state.isSignedIn && state.photoUrl != null) {
+            AsyncImage(
+                model = state.photoUrl,
+                contentDescription = null,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier.size(72.dp).clip(CircleShape),
+            )
+        } else {
+            Box(
+                Modifier.size(72.dp).background(Color.LightGray, CircleShape),
+                contentAlignment = Alignment.Center,
+            ) { Text("You") }
+        }
 
         Spacer(Modifier.height(12.dp))
 

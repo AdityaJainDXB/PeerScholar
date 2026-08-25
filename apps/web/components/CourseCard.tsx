@@ -7,14 +7,21 @@ export default function CourseCard({ course }: { course: Course }) {
   return (
     <Link
       href={`/courses/${course.id}`}
-      className="group block overflow-hidden rounded-2xl border border-slate-200 bg-white transition hover:-translate-y-0.5 hover:shadow-lg hover:shadow-slate-200/60"
+      className="group block overflow-hidden rounded-2xl border border-slate-200 bg-white transition duration-300 hover:-translate-y-1 hover:shadow-lg hover:shadow-slate-200/60"
     >
-      <div className="flex h-32 items-center justify-center bg-gradient-to-br from-brand-500 to-purple-500 text-3xl font-black text-white/90 transition group-hover:scale-105">
-        {course.subject.slice(0, 2).toUpperCase()}
+      <div className="relative h-32 overflow-hidden">
+        <img
+          src={`https://picsum.photos/seed/${course.id}/480/320`}
+          alt=""
+          className="h-full w-full object-cover transition duration-500 group-hover:scale-110"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-slate-900/70 via-slate-900/10 to-transparent" />
+        <span className="absolute bottom-2 left-3 text-xs font-bold uppercase tracking-wide text-white drop-shadow">
+          {course.subject}
+        </span>
       </div>
       <div className="p-4">
-        <p className="text-xs font-medium uppercase tracking-wide text-brand-600">{course.subject}</p>
-        <h3 className="mt-1 line-clamp-2 font-semibold text-slate-900">{course.title}</h3>
+        <h3 className="line-clamp-2 font-semibold text-slate-900">{course.title}</h3>
         <p className="mt-1 text-sm text-slate-500">by {course.tutorName}</p>
         <div className="mt-3 flex items-center justify-between">
           <RatingStars rating={course.ratingAvg} count={course.ratingCount} />

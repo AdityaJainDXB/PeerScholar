@@ -10,6 +10,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import org.peerscholar.app.data.MockData
+import org.peerscholar.app.ui.components.Avatar
 import org.peerscholar.app.ui.components.CourseRow
 import org.peerscholar.app.ui.components.RatingStars
 import org.peerscholar.app.ui.components.SessionCard
@@ -21,8 +22,15 @@ fun TutorProfileScreen(tutorId: String, onCourseClick: (String) -> Unit) {
     val courses = MockData.courses.filter { it.tutorId == tutorId }
 
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp)) {
-        Text(tutor.fullName, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
-        RatingStars(tutor.ratingAvg, tutor.ratingCount)
+        Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+            Avatar(tutor.id, size = 64)
+            Spacer(Modifier.width(14.dp))
+            Column {
+                Text(tutor.fullName, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+                RatingStars(tutor.ratingAvg, tutor.ratingCount)
+            }
+        }
+        Spacer(Modifier.height(10.dp))
         Text(tutor.bio, style = MaterialTheme.typography.bodyMedium)
 
         if (sessions.isNotEmpty()) {

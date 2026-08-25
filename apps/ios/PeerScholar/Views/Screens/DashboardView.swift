@@ -16,10 +16,13 @@ struct DashboardView: View {
 
                 if auth.viewMode == .teacher && auth.isSignedIn {
                     TeacherDashboardContent()
+                        .transition(.asymmetric(insertion: .move(edge: .trailing).combined(with: .opacity), removal: .move(edge: .leading).combined(with: .opacity)))
                 } else {
                     LearnerDashboardContent()
+                        .transition(.asymmetric(insertion: .move(edge: .leading).combined(with: .opacity), removal: .move(edge: .trailing).combined(with: .opacity)))
                 }
             }
+            .animation(.spring(response: 0.4, dampingFraction: 0.85), value: auth.viewMode)
             .padding()
         }
         .navigationTitle(auth.viewMode == .teacher && auth.isSignedIn ? "Analytics" : "My Learning")
@@ -55,15 +58,21 @@ private struct LearnerDashboardContent: View {
             Text("Continue learning").font(.title3.bold())
             ForEach(Array(MockData.courses.prefix(3).enumerated()), id: \.element.id) { index, course in
                 let progress = [0.62, 0.18, 0.90][index % 3]
-                VStack(alignment: .leading, spacing: 6) {
-                    HStack {
-                        Text(course.title).font(.headline)
-                        Spacer()
-                        Text("\(Int(progress * 100))%").font(.caption).foregroundStyle(.secondary)
+                VStack(alignment: .leading, spacing: 0) {
+                    Thumbnail(seed: course.id, height: 90, badge: course.subject)
+                    VStack(alignment: .leading, spacing: 6) {
+                        HStack {
+                            Text(course.title).font(.headline)
+                            Spacer()
+                            Text("\(Int(progress * 100))%").font(.caption).foregroundStyle(.secondary)
+                        }
+                        ProgressView(value: progress).tint(Color.brand)
                     }
-                    ProgressView(value: progress).tint(Color.brand)
+                    .padding(12)
                 }
-                .cardBackground()
+                .background(Color(.secondarySystemGroupedBackground))
+                .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                .appearAnimation(delay: Double(index) * 0.06)
             }
         }
     }
@@ -77,6 +86,7 @@ private struct TeacherDashboardContent: View {
     var newest: Course? { myCourses.max(by: { $0.createdAt < $1.createdAt }) }
     var topSelling: [Course] { myCourses.sorted { $0.enrollmentCount > $1.enrollmentCount } }
     var maxWeekly: Int { MockData.earningsHistory.map(\.cents).max() ?? 1 }
+    @State private var chartGrown = false
 
     var body: some View {
         if let newest {
@@ -106,12 +116,15 @@ private struct TeacherDashboardContent: View {
                     VStack(spacing: 4) {
                         RoundedRectangle(cornerRadius: 4)
                             .fill(Color.brand.gradient)
-                            .frame(height: max(6, CGFloat(week.cents) / CGFloat(maxWeekly) * 100))
+                            .frame(height: chartGrown ? max(6, CGFloat(week.cents) / CGFloat(maxWeekly) * 100) : 0)
                         Text(week.label).font(.system(size: 10)).foregroundStyle(.secondary)
                     }
                 }
             }
             .frame(height: 120, alignment: .bottom)
+            .onAppear {
+                withAnimation(.spring(response: 0.6, dampingFraction: 0.75)) { chartGrown = true }
+            }
         }
         .cardBackground()
 
@@ -119,6 +132,7 @@ private struct TeacherDashboardContent: View {
             Text("Top-selling courses").font(.title3.bold())
             ForEach(Array(topSelling.enumerated()), id: \.element.id) { index, course in
                 HStack {
+                    AvatarImage(seed: course.id, size: 40)
                     Text("\(index + 1)").font(.caption.bold()).foregroundStyle(.secondary)
                         .frame(width: 22, height: 22)
                         .background(Color.gray.opacity(0.15)).clipShape(Circle())

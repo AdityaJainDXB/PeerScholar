@@ -4,35 +4,37 @@ struct HomeView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 24) {
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("Learn from students who\njust got the A.")
-                        .font(.system(size: 28, weight: .heavy))
-                    Text("Live tutoring and on-demand courses, taught by peers, checked for quality by peers.")
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
+                ZStack(alignment: .bottomLeading) {
+                    LinearGradient(colors: [Color.brand, .purple], startPoint: .topLeading, endPoint: .bottomTrailing)
+                        .frame(height: 170)
+                        .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("Learn from students who\njust got the A.")
+                            .font(.system(size: 24, weight: .heavy))
+                            .foregroundStyle(.white)
+                        Text("Live tutoring & on-demand courses, taught by peers.")
+                            .font(.subheadline)
+                            .foregroundStyle(.white.opacity(0.85))
+                    }
+                    .padding(18)
                 }
-                .padding(.top, 8)
+                .appearAnimation()
 
                 VStack(alignment: .leading, spacing: 10) {
                     Text("Popular courses").font(.title3.bold())
-                    ForEach(MockData.courses) { course in
+                    ForEach(Array(MockData.courses.enumerated()), id: \.element.id) { index, course in
                         NavigationLink(value: course.id) { CourseRow(course: course) }
-                            .buttonStyle(.plain)
+                            .buttonStyle(ScaleButtonStyle())
+                            .appearAnimation(delay: Double(index) * 0.06)
                     }
                 }
 
                 VStack(alignment: .leading, spacing: 10) {
                     Text("Top-rated tutors").font(.title3.bold())
-                    ForEach(MockData.tutors) { tutor in
-                        NavigationLink(value: tutor.id) {
-                            VStack(alignment: .leading, spacing: 4) {
-                                Text(tutor.fullName).font(.headline)
-                                RatingStars(rating: tutor.ratingAvg, count: tutor.ratingCount)
-                                Text(tutor.bio).font(.caption).foregroundStyle(.secondary).lineLimit(2)
-                            }
-                            .cardBackground()
-                        }
-                        .buttonStyle(.plain)
+                    ForEach(Array(MockData.tutors.enumerated()), id: \.element.id) { index, tutor in
+                        NavigationLink(value: tutor.id) { TutorRow(tutor: tutor) }
+                            .buttonStyle(ScaleButtonStyle())
+                            .appearAnimation(delay: Double(index) * 0.06)
                     }
                 }
             }
