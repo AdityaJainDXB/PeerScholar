@@ -2,18 +2,24 @@
 
 ## Phase 0 — Scaffold (this repo, current state)
 - [x] Product spec, business model, architecture docs
-- [x] Supabase schema (Postgres) covering users, courses, sessions,
+- [x] Firestore schema + security rules covering users, courses, sessions,
       payments, reviews, QA reviews, reports
-- [x] Website scaffold (Next.js) — landing page, browse, tutor profile,
-      course detail/player, student/tutor dashboards, QA review queue,
-      auth screens — running on mock data
-- [x] Mobile app scaffold (Expo) — same core screens, running on mock data
+- [x] Website (Next.js, static export) — landing page, browse, tutor
+      profile, course detail/player, student/tutor dashboards, QA review
+      queue, auth screens — running on mock data, real Google Sign-In wired
+- [x] Native iOS app (Swift/SwiftUI) — same core screens, real Google
+      Sign-In wired, builds and runs in the simulator
+- [x] Native Android app (Kotlin/Jetpack Compose) — same core screens,
+      real Google Sign-In wired (written against current APIs; not yet
+      compiled in this environment — no Android SDK available here)
+- [x] GitHub Pages deploy workflow for the website
 
-## Phase 1 — Real backend, no money yet
-- [ ] Wire website + mobile to a live Supabase project (real auth, real DB)
-- [ ] Real course upload (video file → Supabase Storage) and playback
+## Phase 1 — Real data, no money yet
+- [ ] Wire up a real Firebase project (this repo ships with mock data by
+      default — see each app's README for exact setup steps)
+- [ ] Real course upload (video file → Firebase Storage) and playback
 - [ ] Real session booking against tutor-set availability
-- [ ] Ratings/reviews actually write to the database
+- [ ] Ratings/reviews actually write to Firestore
 - [ ] QA reviewer rubric review actually gates course publishing
 
 ## Phase 2 — Payments & live video

@@ -1,0 +1,51 @@
+name: PeerScholar
+options:
+  bundleIdPrefix: org.peerscholar
+  deploymentTarget:
+    iOS: "16.0"
+  createIntermediateGroups: true
+
+packages:
+  FirebaseSDK:
+    url: https://github.com/firebase/firebase-ios-sdk
+    from: 10.29.0
+  GoogleSignIn:
+    url: https://github.com/google/GoogleSignIn-iOS
+    from: 7.1.0
+
+targets:
+  PeerScholar:
+    type: application
+    platform: iOS
+    sources:
+      - path: PeerScholar
+        excludes:
+          - "Resources/Info.plist"
+    info:
+      path: PeerScholar/Resources/Info.plist
+      properties:
+        UILaunchScreen: {}
+        CFBundleURLTypes:
+          - CFBundleURLSchemes:
+              # Replace with the REVERSED_CLIENT_ID from your real
+              # GoogleService-Info.plist — see apps/ios/README.md.
+              - "com.googleusercontent.apps.REPLACE_ME"
+        NSAppTransportSecurity:
+          NSAllowsArbitraryLoads: false
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: org.peerscholar.app
+        SWIFT_VERSION: "5.0"
+        TARGETED_DEVICE_FAMILY: "1,2"
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        DEVELOPMENT_TEAM: ""
+        CODE_SIGN_STYLE: Automatic
+    dependencies:
+      - package: FirebaseSDK
+        product: FirebaseAuth
+      - package: FirebaseSDK
+        product: FirebaseFirestore
+      - package: GoogleSignIn
+        product: GoogleSignIn
+      - package: GoogleSignIn
+        product: GoogleSignInSwift

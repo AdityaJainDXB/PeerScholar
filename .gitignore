@@ -12,21 +12,19 @@ firebase-debug.log
 firestore-debug.log
 
 # iOS
-ios/build/
-ios/DerivedData/
-ios/*.xcuserstate
-ios/**/xcuserdata/
-ios/Pods/
-*.xcworkspace/xcuserdata/
+apps/ios/build/
+apps/ios/DerivedData/
+**/*.xcuserstate
+**/xcuserdata/
+apps/ios/Pods/
 GoogleService-Info.plist
 
 # Android
-android/.gradle/
-android/build/
-android/app/build/
-android/local.properties
-android/.idea/
-android/*.iml
+apps/android/.gradle/
+apps/android/**/build/
+apps/android/local.properties
+apps/android/.idea/
+apps/android/*.iml
 google-services.json
 
 # OS
