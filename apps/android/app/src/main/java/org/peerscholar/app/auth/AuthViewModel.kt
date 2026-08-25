@@ -17,16 +17,23 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import org.peerscholar.app.R
 
+enum class ViewMode { LEARNER, TEACHER }
+
 data class AuthUiState(
     val isSignedIn: Boolean = false,
     val displayName: String? = null,
     val photoUrl: String? = null,
     val errorMessage: String? = null,
+    val viewMode: ViewMode = ViewMode.LEARNER,
 )
 
 class AuthViewModel : ViewModel() {
     private val _state = MutableStateFlow(AuthUiState())
     val state: StateFlow<AuthUiState> = _state
+
+    fun setViewMode(mode: ViewMode) {
+        _state.value = _state.value.copy(viewMode = mode)
+    }
 
     fun isFirebaseConfigured(context: Context) = FirebaseApp.getApps(context).isNotEmpty()
 

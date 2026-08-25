@@ -7,9 +7,9 @@ export default function CourseCard({ course }: { course: Course }) {
   return (
     <Link
       href={`/courses/${course.id}`}
-      className="block overflow-hidden rounded-xl border border-slate-200 bg-white transition hover:shadow-md"
+      className="group block overflow-hidden rounded-2xl border border-slate-200 bg-white transition hover:-translate-y-0.5 hover:shadow-lg hover:shadow-slate-200/60"
     >
-      <div className="flex h-32 items-center justify-center bg-gradient-to-br from-brand-100 to-brand-50 text-3xl font-bold text-brand-400">
+      <div className="flex h-32 items-center justify-center bg-gradient-to-br from-brand-500 to-purple-500 text-3xl font-black text-white/90 transition group-hover:scale-105">
         {course.subject.slice(0, 2).toUpperCase()}
       </div>
       <div className="p-4">

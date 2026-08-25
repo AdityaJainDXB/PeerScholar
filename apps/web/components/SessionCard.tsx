@@ -6,7 +6,7 @@ export default function SessionCard({ session }: { session: LiveSession }) {
   const spotsLeft = session.maxParticipants - session.bookedCount;
 
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-4">
+    <div className="rounded-2xl border border-slate-200 bg-white p-4 transition hover:-translate-y-0.5 hover:shadow-lg hover:shadow-slate-200/60">
       <p className="text-xs font-medium uppercase tracking-wide text-brand-600">{session.subject}</p>
       <h3 className="mt-1 font-semibold text-slate-900">{session.title}</h3>
       <p className="mt-1 text-sm text-slate-500">with {session.tutorName}</p>

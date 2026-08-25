@@ -2,19 +2,24 @@
 
 import Link from "next/link";
 import Image from "next/image";
+import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { useAuth } from "@/lib/AuthProvider";
 import { signInWithGoogle, signOutOfFirebase, isFirebaseConfigured } from "@/lib/firebaseClient";
 
-const links = [
+const learnerLinks = [
   { href: "/browse", label: "Browse" },
   { href: "/dashboard/student", label: "My Learning" },
-  { href: "/dashboard/tutor", label: "Teach" },
+];
+
+const teacherLinks = [
+  { href: "/dashboard/tutor", label: "Analytics" },
   { href: "/admin/qa", label: "QA Queue" },
 ];
 
 export default function Navbar() {
-  const { user, loading } = useAuth();
+  const { user, loading, viewMode, setViewMode } = useAuth();
+  const pathname = usePathname();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -30,25 +35,57 @@ export default function Navbar() {
     }
   }
 
+  const links = viewMode === "teacher" ? teacherLinks : learnerLinks;
+
   return (
-    <header className="sticky top-0 z-50 border-b border-slate-200/80 bg-white/80 backdrop-blur">
-      <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3.5">
-        <Link href="/" className="flex items-center gap-2 text-lg font-bold text-slate-900">
+    <header className="sticky top-0 z-50 border-b border-slate-200/80 bg-white/85 backdrop-blur">
+      <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3">
+        <Link href="/" className="flex shrink-0 items-center gap-2 text-lg font-bold text-slate-900">
           <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-brand-500 to-brand-700 text-sm font-extrabold text-white shadow-sm">
             PS
           </span>
-          PeerScholar
+          <span className="hidden sm:inline">PeerScholar</span>
         </Link>
-        <nav className="hidden items-center gap-7 text-sm font-medium text-slate-600 md:flex">
-          {links.map((l) => (
-            <Link key={l.href} href={l.href} className="transition hover:text-brand-700">
-              {l.label}
-            </Link>
-          ))}
+
+        <nav className="hidden items-center gap-6 text-sm font-medium text-slate-600 md:flex">
+          {links.map((l) => {
+            const active = pathname === l.href;
+            return (
+              <Link
+                key={l.href}
+                href={l.href}
+                className={`transition hover:text-brand-700 ${active ? "text-brand-700" : ""}`}
+              >
+                {l.label}
+              </Link>
+            );
+          })}
         </nav>
 
         <div className="flex items-center gap-3">
           {error && <span className="hidden text-xs text-rose-600 sm:inline">{error}</span>}
+
+          {!loading && user && (
+            <div className="flex items-center rounded-full bg-slate-100 p-0.5 text-xs font-semibold">
+              <button
+                onClick={() => setViewMode("learner")}
+                className={`rounded-full px-3 py-1.5 transition ${
+                  viewMode === "learner" ? "bg-white text-slate-900 shadow-sm" : "text-slate-500 hover:text-slate-700"
+                }`}
+              >
+                Learner
+              </button>
+              <button
+                onClick={() => setViewMode("teacher")}
+                className={`rounded-full px-3 py-1.5 transition ${
+                  viewMode === "teacher" ? "bg-white text-slate-900 shadow-sm" : "text-slate-500 hover:text-slate-700"
+                }`}
+              >
+                Teacher
+              </button>
+            </div>
+          )}
+
           {!loading && user ? (
             <div className="flex items-center gap-2">
               {user.photoURL && (
@@ -60,7 +97,7 @@ export default function Navbar() {
                   className="rounded-full"
                 />
               )}
-              <span className="hidden text-sm font-medium text-slate-700 sm:inline">
+              <span className="hidden text-sm font-medium text-slate-700 lg:inline">
                 {user.displayName?.split(" ")[0]}
               </span>
               <button
@@ -82,6 +119,16 @@ export default function Navbar() {
           )}
         </div>
       </div>
+
+      {!loading && user && (
+        <nav className="flex items-center gap-5 overflow-x-auto border-t border-slate-100 px-4 py-2 text-sm font-medium text-slate-600 md:hidden">
+          {links.map((l) => (
+            <Link key={l.href} href={l.href} className="shrink-0 transition hover:text-brand-700">
+              {l.label}
+            </Link>
+          ))}
+        </nav>
+      )}
     </header>
   );
 }

@@ -45,6 +45,7 @@ export interface Course {
   ratingAvg: number;
   ratingCount: number;
   enrollmentCount: number;
+  createdAt?: string; // ISO string — used to flag "new" courses in tutor analytics
 }
 
 export interface Lesson {
@@ -70,6 +71,7 @@ export interface LiveSession {
   maxParticipants: number;
   bookedCount: number;
   status: SessionStatus;
+  joinUrl?: string; // link learners use to join the live call
 }
 
 export interface Booking {

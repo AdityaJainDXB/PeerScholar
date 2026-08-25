@@ -34,6 +34,7 @@ data class Course(
     val ratingAvg: Double,
     val ratingCount: Int,
     val enrollmentCount: Int,
+    val createdAt: Date = Date(),
 ) {
     val priceDisplay: String get() = centsToDisplay(priceCents)
 }
@@ -51,9 +52,12 @@ data class LiveSession(
     val maxParticipants: Int,
     val bookedCount: Int,
     val status: SessionStatus,
+    val joinUrl: String? = null,
 ) {
     val priceDisplay: String get() = centsToDisplay(priceCents)
     val spotsLeft: Int get() = maxParticipants - bookedCount
 }
+
+data class WeeklyEarning(val label: String, val cents: Int)
 
 fun centsToDisplay(cents: Int): String = "$%.2f".format(cents / 100.0)

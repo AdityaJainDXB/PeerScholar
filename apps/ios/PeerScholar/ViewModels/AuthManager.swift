@@ -3,12 +3,19 @@ import FirebaseCore
 import FirebaseAuth
 import GoogleSignIn
 
+enum ViewMode: String {
+    case learner, teacher
+}
+
 @MainActor
 final class AuthManager: ObservableObject {
     @Published var displayName: String?
     @Published var photoURL: URL?
     @Published var isSignedIn = false
     @Published var errorMessage: String?
+    @Published var viewMode: ViewMode = ViewMode(rawValue: UserDefaults.standard.string(forKey: "viewMode") ?? "") ?? .learner {
+        didSet { UserDefaults.standard.set(viewMode.rawValue, forKey: "viewMode") }
+    }
 
     var isFirebaseConfigured: Bool {
         FirebaseApp.app() != nil

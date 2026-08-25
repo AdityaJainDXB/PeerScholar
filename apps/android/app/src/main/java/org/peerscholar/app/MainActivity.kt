@@ -81,7 +81,7 @@ fun PeerScholarApp(authViewModel: AuthViewModel) {
                 )
             }
             composable("browse") { BrowseScreen() }
-            composable("dashboard") { DashboardScreen() }
+            composable("dashboard") { DashboardScreen(authViewModel) }
             composable("profile") { ProfileScreen(authViewModel) }
             composable("course/{id}") { backStackEntry ->
                 CourseDetailScreen(backStackEntry.arguments?.getString("id").orEmpty())

@@ -44,6 +44,7 @@ struct Course: Identifiable, Codable {
     let ratingAvg: Double
     let ratingCount: Int
     let enrollmentCount: Int
+    var createdAt: Date = Date()
 
     var priceDisplay: String { centsToDisplay(priceCents) }
 }
@@ -61,9 +62,16 @@ struct LiveSession: Identifiable, Codable {
     let maxParticipants: Int
     let bookedCount: Int
     let status: SessionStatus
+    var joinUrl: String? = nil
 
     var priceDisplay: String { centsToDisplay(priceCents) }
     var spotsLeft: Int { maxParticipants - bookedCount }
+}
+
+struct WeeklyEarning: Identifiable {
+    let id = UUID()
+    let label: String
+    let cents: Int
 }
 
 func centsToDisplay(_ cents: Int) -> String {

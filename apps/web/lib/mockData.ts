@@ -1,5 +1,12 @@
 import type { Course, LiveSession, Profile, QaReview, Review } from "@shared/types";
 
+export const CURRENT_USER_ID = "t1";
+
+// A fixed reference point (not Date.now()) so every relative mock timestamp
+// below renders identically on the server and after client hydration —
+// Date.now() at module scope drifts between the two and breaks hydration.
+const NOW = new Date("2026-08-25T12:00:00Z").getTime();
+
 export const mockTutors: Profile[] = [
   {
     id: "t1",
@@ -63,6 +70,7 @@ export const mockCourses: Course[] = [
     ratingAvg: 4.9,
     ratingCount: 51,
     enrollmentCount: 312,
+    createdAt: new Date(NOW - 1000 * 60 * 60 * 24 * 200).toISOString(),
   },
   {
     id: "c2",
@@ -109,6 +117,23 @@ export const mockCourses: Course[] = [
     ratingAvg: 5.0,
     ratingCount: 12,
     enrollmentCount: 88,
+    createdAt: new Date(NOW - 1000 * 60 * 60 * 24 * 120).toISOString(),
+  },
+  {
+    id: "c5",
+    tutorId: "t1",
+    tutorName: "Maya Chen",
+    subject: "AP Calculus AB",
+    title: "AP Calculus AB: Derivatives Deep Dive",
+    description: "A focused course on differentiation rules, implicit differentiation, and related rates, with FRQ practice.",
+    priceCents: 3500,
+    status: "published",
+    lessonCount: 14,
+    totalDurationMinutes: 210,
+    ratingAvg: 4.8,
+    ratingCount: 9,
+    enrollmentCount: 47,
+    createdAt: new Date(NOW - 1000 * 60 * 60 * 24 * 6).toISOString(),
   },
 ];
 
@@ -121,11 +146,12 @@ export const mockLiveSessions: LiveSession[] = [
     title: "1:1 Help — Related Rates & Optimization",
     description: "Bring your homework or a specific topic you're stuck on.",
     priceCents: 3500,
-    scheduledAt: new Date(Date.now() + 1000 * 60 * 60 * 26).toISOString(),
+    scheduledAt: new Date(NOW + 1000 * 60 * 60 * 26).toISOString(),
     durationMinutes: 45,
     maxParticipants: 1,
     bookedCount: 0,
     status: "scheduled",
+    joinUrl: "https://meet.peerscholar.app/s1",
   },
   {
     id: "s2",
@@ -135,11 +161,12 @@ export const mockLiveSessions: LiveSession[] = [
     title: "Group Session — Debugging Your Project",
     description: "Small group (up to 4). Bring your code, we'll debug together.",
     priceCents: 1500,
-    scheduledAt: new Date(Date.now() + 1000 * 60 * 60 * 50).toISOString(),
+    scheduledAt: new Date(NOW + 1000 * 60 * 60 * 50).toISOString(),
     durationMinutes: 60,
     maxParticipants: 4,
     bookedCount: 2,
     status: "scheduled",
+    joinUrl: "https://meet.peerscholar.app/s2",
   },
   {
     id: "s3",
@@ -149,12 +176,39 @@ export const mockLiveSessions: LiveSession[] = [
     title: "Conversation Practice Hour",
     description: "Casual conversation practice, all levels welcome.",
     priceCents: 1200,
-    scheduledAt: new Date(Date.now() + 1000 * 60 * 60 * 8).toISOString(),
+    scheduledAt: new Date(NOW + 1000 * 60 * 60 * 8).toISOString(),
     durationMinutes: 60,
     maxParticipants: 6,
     bookedCount: 5,
     status: "scheduled",
+    joinUrl: "https://meet.peerscholar.app/s3",
   },
+  {
+    id: "s4",
+    tutorId: "t1",
+    tutorName: "Maya Chen",
+    subject: "AP Calculus BC",
+    title: "Live Review — Series Convergence Tests",
+    description: "Walking through the ratio, root, and comparison tests with practice problems.",
+    priceCents: 0,
+    scheduledAt: new Date(NOW + 1000 * 60 * 60 * 4).toISOString(),
+    durationMinutes: 50,
+    maxParticipants: 30,
+    bookedCount: 21,
+    status: "scheduled",
+    joinUrl: "https://meet.peerscholar.app/s4",
+  },
+];
+
+// Last 6 weeks of gross earnings for the signed-in tutor (t1), used by the
+// analytics chart on the Teach dashboard.
+export const mockEarningsHistory = [
+  { label: "Wk 1", cents: 18400 },
+  { label: "Wk 2", cents: 21200 },
+  { label: "Wk 3", cents: 19800 },
+  { label: "Wk 4", cents: 26500 },
+  { label: "Wk 5", cents: 31200 },
+  { label: "Wk 6", cents: 29700 },
 ];
 
 export const mockReviews: Review[] = [
@@ -166,7 +220,7 @@ export const mockReviews: Review[] = [
     targetId: "t1",
     rating: 5,
     comment: "Maya explained series convergence better than my actual teacher. Highly recommend.",
-    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3).toISOString(),
+    createdAt: new Date(NOW - 1000 * 60 * 60 * 24 * 3).toISOString(),
   },
   {
     id: "r2",
@@ -176,7 +230,7 @@ export const mockReviews: Review[] = [
     targetId: "c1",
     rating: 5,
     comment: "Watched this before my AP exam, went from a 3 to a 5 on my practice test after.",
-    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 10).toISOString(),
+    createdAt: new Date(NOW - 1000 * 60 * 60 * 24 * 10).toISOString(),
   },
 ];
 
