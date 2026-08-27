@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { useAuth } from "@/lib/AuthProvider";
 import { signInWithGoogle, signOutOfFirebase, isFirebaseConfigured } from "@/lib/firebaseClient";
+import { withBasePath } from "@/lib/basePath";
 
 const learnerLinks = [
   { href: "/browse", label: "Browse" },
@@ -41,7 +42,7 @@ export default function Navbar() {
     <header className="sticky top-0 z-50 border-b border-slate-200/80 bg-white/85 backdrop-blur">
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3">
         <Link href="/" className="flex shrink-0 items-center gap-2">
-          <Image src="/logo.png" alt="PeerScholar" width={36} height={36} className="h-9 w-9 object-contain" priority />
+          <Image src={withBasePath("/logo.png")} alt="PeerScholar" width={36} height={36} className="h-9 w-9 object-contain" priority />
           <span className="hidden text-lg font-bold text-slate-900 sm:inline">PeerScholar</span>
         </Link>
 
