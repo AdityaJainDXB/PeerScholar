@@ -72,7 +72,7 @@ struct Thumbnail: View {
                 case .success(let image):
                     image.resizable().scaledToFill()
                 default:
-                    LinearGradient(colors: [Color.brand, .purple], startPoint: .topLeading, endPoint: .bottomTrailing)
+                    LinearGradient(colors: [Color.brandNavy, Color.brand], startPoint: .topLeading, endPoint: .bottomTrailing)
                 }
             }
             .frame(height: height)
@@ -104,7 +104,7 @@ struct AvatarImage: View {
             case .success(let image):
                 image.resizable().scaledToFill()
             default:
-                Circle().fill(LinearGradient(colors: [Color.brand, .purple], startPoint: .top, endPoint: .bottom))
+                Circle().fill(LinearGradient(colors: [Color.brandNavy, Color.brand], startPoint: .top, endPoint: .bottom))
             }
         }
         .frame(width: size, height: size)
@@ -185,15 +185,19 @@ struct SessionCard: View {
 
 /// Fades and slides content up on first appearance — used to give scroll
 /// views a gentler, staggered entrance instead of popping in instantly.
+/// Skips the motion entirely when the person has Reduce Motion turned on
+/// (Design Guideline — Accessibility > Cognitive).
 struct AppearAnimation: ViewModifier {
     var delay: Double = 0
     @State private var shown = false
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     func body(content: Content) -> some View {
         content
-            .opacity(shown ? 1 : 0)
-            .offset(y: shown ? 0 : 12)
+            .opacity(reduceMotion ? 1 : (shown ? 1 : 0))
+            .offset(y: reduceMotion ? 0 : (shown ? 0 : 12))
             .onAppear {
+                guard !reduceMotion else { return }
                 withAnimation(.easeOut(duration: 0.5).delay(delay)) {
                     shown = true
                 }

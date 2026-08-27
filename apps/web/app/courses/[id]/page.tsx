@@ -70,7 +70,7 @@ export default function CourseDetailPage({ params }: { params: { id: string } })
               {lessons.map((l) => (
                 <div key={l.id} className="flex items-center justify-between px-4 py-3">
                   <span className="text-sm text-slate-700">{l.title}</span>
-                  <span className="flex items-center gap-2 text-xs text-slate-400">
+                  <span className="flex items-center gap-2 text-xs text-slate-500">
                     {l.isPreview && <Badge label="Preview" tone="verified" />}
                     {l.durationMinutes}m
                   </span>

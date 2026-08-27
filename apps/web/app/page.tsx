@@ -40,7 +40,7 @@ export default function HomePage() {
           className="absolute inset-0 opacity-60"
           style={{
             backgroundImage:
-              "radial-gradient(circle at 20% 20%, rgba(52,128,250,0.35), transparent 45%), radial-gradient(circle at 80% 0%, rgba(139,92,246,0.25), transparent 40%), radial-gradient(circle at 50% 100%, rgba(52,128,250,0.2), transparent 45%)",
+              "radial-gradient(circle at 20% 20%, rgba(52,128,250,0.35), transparent 45%), radial-gradient(circle at 80% 0%, rgba(245,185,66,0.18), transparent 40%), radial-gradient(circle at 50% 100%, rgba(52,128,250,0.2), transparent 45%)",
           }}
         />
         <div className="relative mx-auto max-w-6xl px-4 py-24 text-center sm:py-32">
@@ -50,7 +50,7 @@ export default function HomePage() {
           </span>
           <h1 className="stagger-1 animate-fade-in-up mx-auto mt-6 max-w-3xl text-4xl font-extrabold tracking-tight text-white sm:text-6xl">
             Learn from students who
-            <span className="bg-gradient-to-r from-brand-300 to-purple-300 bg-clip-text text-transparent"> just got the A.</span>
+            <span className="bg-gradient-to-r from-brand-300 to-amber-300 bg-clip-text text-transparent"> just got the A.</span>
           </h1>
           <p className="stagger-2 animate-fade-in-up mx-auto mt-5 max-w-2xl text-lg text-slate-300">
             PeerScholar connects high school and university students for live tutoring and

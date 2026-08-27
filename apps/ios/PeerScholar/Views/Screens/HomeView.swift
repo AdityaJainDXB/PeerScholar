@@ -5,7 +5,7 @@ struct HomeView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 24) {
                 ZStack(alignment: .bottomLeading) {
-                    LinearGradient(colors: [Color.brand, .purple], startPoint: .topLeading, endPoint: .bottomTrailing)
+                    LinearGradient(colors: [Color.brandNavy, Color.brand], startPoint: .topLeading, endPoint: .bottomTrailing)
                         .frame(height: 170)
                         .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
                     VStack(alignment: .leading, spacing: 8) {

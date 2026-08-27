@@ -71,7 +71,7 @@ export default function TutorDashboard() {
                 className="w-full rounded-t-md bg-gradient-to-t from-brand-600 to-brand-400 transition-[height] duration-700 ease-out"
                 style={{ height: mounted ? `${Math.max(8, (w.cents / maxWeekly) * 96)}px` : "0px" }}
               />
-              <span className="text-xs text-slate-400">{w.label}</span>
+              <span className="text-xs text-slate-500">{w.label}</span>
             </div>
           ))}
         </div>

@@ -51,7 +51,7 @@ export default function StudentDashboard() {
                     {startsSoon ? "Join now" : "Get link"}
                   </a>
                 ) : (
-                  <span className="text-sm text-slate-400">Link posted soon</span>
+                  <span className="text-sm text-slate-500">Link posted soon</span>
                 )}
               </div>
             );

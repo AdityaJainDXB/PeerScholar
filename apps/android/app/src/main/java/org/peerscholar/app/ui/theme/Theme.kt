@@ -9,6 +9,8 @@ import androidx.compose.ui.graphics.Color
 
 val Brand600 = Color(0xFF1E63EF)
 val Brand700 = Color(0xFF1A4FDC)
+val BrandNavy = Color(0xFF10254D) // deep navy from the PeerScholar logo's shield background
+val Gold = Color(0xFFF5B942) // matches the logo's star accent
 val Slate900 = Color(0xFF0F172A)
 
 private val LightColors = lightColorScheme(

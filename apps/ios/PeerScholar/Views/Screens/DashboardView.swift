@@ -2,6 +2,7 @@ import SwiftUI
 
 struct DashboardView: View {
     @EnvironmentObject var auth: AuthManager
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
         ScrollView {
@@ -16,13 +17,13 @@ struct DashboardView: View {
 
                 if auth.viewMode == .teacher && auth.isSignedIn {
                     TeacherDashboardContent()
-                        .transition(.asymmetric(insertion: .move(edge: .trailing).combined(with: .opacity), removal: .move(edge: .leading).combined(with: .opacity)))
+                        .transition(reduceMotion ? .opacity : .asymmetric(insertion: .move(edge: .trailing).combined(with: .opacity), removal: .move(edge: .leading).combined(with: .opacity)))
                 } else {
                     LearnerDashboardContent()
-                        .transition(.asymmetric(insertion: .move(edge: .leading).combined(with: .opacity), removal: .move(edge: .trailing).combined(with: .opacity)))
+                        .transition(reduceMotion ? .opacity : .asymmetric(insertion: .move(edge: .leading).combined(with: .opacity), removal: .move(edge: .trailing).combined(with: .opacity)))
                 }
             }
-            .animation(.spring(response: 0.4, dampingFraction: 0.85), value: auth.viewMode)
+            .animation(reduceMotion ? .easeInOut(duration: 0.2) : .spring(response: 0.4, dampingFraction: 0.85), value: auth.viewMode)
             .padding()
         }
         .navigationTitle(auth.viewMode == .teacher && auth.isSignedIn ? "Analytics" : "My Learning")

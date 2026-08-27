@@ -18,6 +18,7 @@ import org.peerscholar.app.ui.components.CourseRow
 import org.peerscholar.app.ui.components.TutorRow
 import org.peerscholar.app.ui.components.appearAnimation
 import org.peerscholar.app.ui.theme.Brand600
+import org.peerscholar.app.ui.theme.BrandNavy
 
 @Composable
 fun HomeScreen(onCourseClick: (String) -> Unit, onTutorClick: (String) -> Unit) {
@@ -27,7 +28,7 @@ fun HomeScreen(onCourseClick: (String) -> Unit, onTutorClick: (String) -> Unit) 
                 Modifier
                     .fillMaxWidth()
                     .height(150.dp)
-                    .background(Brush.linearGradient(listOf(Brand600, Color(0xFF8B5CF6))), RoundedCornerShape(20.dp))
+                    .background(Brush.linearGradient(listOf(BrandNavy, Brand600)), RoundedCornerShape(20.dp))
                     .padding(18.dp),
             ) {
                 Column {
