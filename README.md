@@ -2,77 +2,62 @@
 
 **Peer-to-peer tutoring, run by students, for students.**
 
-PeerScholar is a marketplace where high school and university students teach
-each other — either live (1:1 or small-group video tutoring) or on-demand
-(Udemy-style recorded courses). PeerScholar handles discovery, scheduling,
-payments/payouts, and quality assurance, so tutors focus on teaching and
-learners focus on learning.
+PeerScholar is a marketplace where high school and university students teach each other — either live (1:1 or small-group video calls) or on-demand (Udemy-style recorded courses). The platform handles the boring stuff — discovery, scheduling, payments, quality checks — so tutors can just focus on teaching and learners can focus on learning.
 
-This repo is a student project built as part of a university application. It
-contains a working prototype — a website plus **native** iOS and Android
-apps — on a shared Firebase backend with real Google Sign-In, plus the
-product/business planning behind it.
+This repo is a student project I built as part of my university application. It's a working prototype: a website plus native iOS and Android apps, all running on a shared Firebase backend with real Google Sign-In, along with the product and business planning behind it.
 
 ## The idea, in short
 
-- **Learners** search for a tutor or course by subject, book a live session or
-  enroll in a recorded course, and pay through the platform.
-- **Tutors** (high school / university students) list what they can teach,
-  run live sessions over video, or record and upload courses.
-- **QA Reviewers** — a part-time role also filled by students — spot-check
-  live sessions for quality and review uploaded courses before they go live,
-  so learners can trust what they're paying for.
-- **PeerScholar** takes a small commission on every paid session or course
-  sale, and pays out the rest to tutors (and a stipend to QA reviewers).
+Learners search for a tutor or course by subject, book a live session or enroll in a recorded course, and pay through the platform.
 
-See [docs/PRODUCT.md](docs/PRODUCT.md) for the full feature set,
-[docs/BUSINESS_MODEL.md](docs/BUSINESS_MODEL.md) for how it makes money,
-[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for how it's built, and
-[docs/ROADMAP.md](docs/ROADMAP.md) for what's next.
+Tutors — high school or university students — list what they can teach, run live sessions over video, or record and upload courses.
+
+QA Reviewers (a part-time role also filled by students) spot-check live sessions and review uploaded courses before they go live, so learners actually know what they're paying for.
+
+PeerScholar takes a small cut of every paid session or course sale and pays out the rest to tutors, plus a stipend to QA reviewers.
+
+Full details: [docs/PRODUCT.md](docs/PRODUCT.md) for the feature set, [docs/BUSINESS_MODEL.md](docs/BUSINESS_MODEL.md) for how it makes money, [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for how it's built, and [docs/ROADMAP.md](docs/ROADMAP.md) for what's next.
 
 ## Repo structure
 
 ```
 PeerScholar/
-├── docs/                  Product, architecture, business model, roadmap
-├── firebase/              Firestore security rules + indexes
-├── packages/shared/       TypeScript types & constants shared by the website
+├── docs/               Product, architecture, business model, roadmap
+├── firebase/           Firestore security rules + indexes
+├── packages/shared/    TypeScript types & constants shared by the website
 └── apps/
-    ├── web/                Next.js website (learners, tutors, QA, admin)
-    ├── ios/                 Native Swift/SwiftUI app (Xcode project, via XcodeGen)
-    └── android/              Native Kotlin/Jetpack Compose app (Android Studio)
+    ├── web/            Next.js website (learners, tutors, QA, admin)
+    ├── ios/            Native Swift/SwiftUI app (Xcode project via XcodeGen)
+    └── android/        Native Kotlin/Jetpack Compose app
 ```
 
-One Firebase project (Auth + Firestore), one data model
-(see [docs/FIRESTORE_SCHEMA.md](docs/FIRESTORE_SCHEMA.md)), three real front
-ends: a static website, a native iOS app, and a native Android app — **not**
-a cross-platform wrapper.
+One Firebase project (Auth + Firestore), one data model (see [docs/FIRESTORE_SCHEMA.md](docs/FIRESTORE_SCHEMA.md)), three real front ends — a website, a native iOS app, a native Android app. Not a cross-platform wrapper around one codebase; each one is built natively for its platform.
 
 ## Tech stack
 
-| Layer          | Choice                                                       |
-|-----------------|---------------------------------------------------------------|
-| Backend         | [Firebase](https://firebase.google.com) — Auth (Google Sign-In), Firestore, Storage |
-| Website         | Next.js 14 (static export) + TypeScript + Tailwind CSS, hosted on GitHub Pages |
-| iOS app         | Native Swift + SwiftUI (Xcode project generated by [XcodeGen](https://github.com/yonaskolb/XcodeGen) from `apps/ios/project.yml`) |
-| Android app     | Native Kotlin + Jetpack Compose (standard Gradle/Android Studio project) |
-| Shared code     | `packages/shared` — TypeScript types & constants used by the website |
-| Payments        | Stripe Connect (marketplace payouts) — *planned, see roadmap* |
-| Live video      | Daily.co or LiveKit embeddable video SDK — *planned, see roadmap* |
+| Layer | Choice |
+|---|---|
+| Backend | Firebase — Auth (Google Sign-In), Firestore, Storage |
+| Website | Next.js 14 (static export) + TypeScript + Tailwind, hosted on GitHub Pages |
+| iOS | Native Swift + SwiftUI (Xcode project generated by XcodeGen from `apps/ios/project.yml`) |
+| Android | Native Kotlin + Jetpack Compose (standard Gradle/Android Studio project) |
+| Shared code | `packages/shared` — TypeScript types & constants used by the website |
+| Payments | Stripe Connect (marketplace payouts) — planned, see roadmap |
+| Live video | Daily.co or LiveKit — planned, see roadmap |
 
 ## Getting started
 
 ### 1. Create a Firebase project
 
-1. Go to the [Firebase Console](https://console.firebase.google.com) → **Add project**.
-2. **Build → Authentication → Sign-in method** → enable **Google**.
-3. **Build → Firestore Database** → create a database (production mode), then
-   deploy the rules in this repo:
-   ```bash
-   npm install -g firebase-tools
-   firebase login
-   firebase deploy --only firestore --project YOUR_PROJECT_ID --config firebase/firebase.json
-   ```
+- Go to the [Firebase Console](https://console.firebase.google.com) → Add project
+- Build → Authentication → Sign-in method → enable Google
+- Build → Firestore Database → create a database (production mode), then deploy the rules in this repo:
+
+```bash
+npm install -g firebase-tools
+firebase login
+firebase deploy --only firestore --project YOUR_PROJECT_ID --config firebase/firebase.json
+```
 
 ### 2. Run the website
 
@@ -83,25 +68,16 @@ cp .env.local.example .env.local   # fill in your Firebase web app config
 npm run dev
 ```
 
-Visit `http://localhost:3000`. The site runs on mock data and sign-in is
-disabled out of the box, so you can preview it immediately even without
-Firebase configured.
+Visit `http://localhost:3000`. It runs on mock data with sign-in disabled by default, so you can preview it right away even without a Firebase project set up.
 
 ### 3. Run the iOS app
 
-See [apps/ios/README.md](apps/ios/README.md) — open `PeerScholar.xcodeproj`
-in Xcode, add your `GoogleService-Info.plist`, and run.
+See [apps/ios/README.md](apps/ios/README.md) — open `PeerScholar.xcodeproj` in Xcode, add your `GoogleService-Info.plist`, and run.
 
 ### 4. Run the Android app
 
-See [apps/android/README.md](apps/android/README.md) — open `apps/android`
-in Android Studio, add your `google-services.json`, and run.
-
+See [apps/android/README.md](apps/android/README.md) — open `apps/android` in Android Studio, add your `google-services.json`, and run.
 
 ## Status
 
-This is an early-stage student project MVP. The website, iOS app, and Android
-app all run today on mock data with real Google Sign-In wired up (once you
-add your own Firebase project's config). Live video and real payments are
-designed into the data model but not yet connected to a live processor —
-see [docs/ROADMAP.md](docs/ROADMAP.md).
+Early-stage MVP. The website, iOS app, and Android app all run today on mock data with real Google Sign-In wired up (once you drop in your own Firebase config). Live video and real payments are designed into the data model but not yet hooked up to a live processor — see the [roadmap](docs/ROADMAP.md) for what's next.
