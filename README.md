@@ -1,22 +1,22 @@
 # PeerScholar
 
-**Peer-to-peer tutoring, run by students, for students.**
+Peer-to-peer tutoring, run by students, for students.
 
-PeerScholar is a marketplace where high school and university students teach each other — either live (1:1 or small-group video calls) or on-demand (Udemy-style recorded courses). The platform handles the boring stuff — discovery, scheduling, payments, quality checks — so tutors can just focus on teaching and learners can focus on learning.
+I started PeerScholar because most tutoring I'd seen either cost way too much (paying $60/hr for an adult tutor) or was just a friend helping for free with no real structure around it. The idea is pretty simple: high school and university students are often the best people to teach other students, because they just went through the exact same material. PeerScholar is a marketplace for that — students teach other students, either live over video or through recorded courses, and the platform takes care of discovery, scheduling, payments, and quality checks so tutors can just focus on teaching.
 
-This repo is a student project I built as part of my university application. It's a working prototype: a website plus native iOS and Android apps, all running on a shared Firebase backend with real Google Sign-In, along with the product and business planning behind it.
+This repo is a student project I built for my university application. It's a real, working prototype — not mockups — a website plus native iOS and Android apps, all on a shared Firebase backend with real Google Sign-In. It also includes the product and business planning I did behind it.
 
-## The idea, in short
+## How it works
 
-Learners search for a tutor or course by subject, book a live session or enroll in a recorded course, and pay through the platform.
+Learners search for a tutor or course by subject, then either book a live session or enroll in a recorded course and pay through the platform.
 
-Tutors — high school or university students — list what they can teach, run live sessions over video, or record and upload courses.
+Tutors (also high school or university students) list what they can teach and either run live video sessions or record and upload a course.
 
-QA Reviewers (a part-time role also filled by students) spot-check live sessions and review uploaded courses before they go live, so learners actually know what they're paying for.
+There's also a QA Reviewer role, filled by students too, who spot-check live sessions and review courses before they go live — so learners actually know what they're paying for isn't going to waste their time.
 
-PeerScholar takes a small cut of every paid session or course sale and pays out the rest to tutors, plus a stipend to QA reviewers.
+PeerScholar takes a small commission on every paid session or course sale and pays the rest out to tutors, plus a stipend to the QA reviewers.
 
-Full details: [docs/PRODUCT.md](docs/PRODUCT.md) for the feature set, [docs/BUSINESS_MODEL.md](docs/BUSINESS_MODEL.md) for how it makes money, [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for how it's built, and [docs/ROADMAP.md](docs/ROADMAP.md) for what's next.
+If you want more detail: [docs/PRODUCT.md](docs/PRODUCT.md) has the full feature set, [docs/BUSINESS_MODEL.md](docs/BUSINESS_MODEL.md) covers how it makes money, [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) explains how it's built, and [docs/ROADMAP.md](docs/ROADMAP.md) is what's next.
 
 ## Repo structure
 
@@ -31,7 +31,7 @@ PeerScholar/
     └── android/        Native Kotlin/Jetpack Compose app
 ```
 
-One Firebase project (Auth + Firestore), one data model (see [docs/FIRESTORE_SCHEMA.md](docs/FIRESTORE_SCHEMA.md)), three real front ends — a website, a native iOS app, a native Android app. Not a cross-platform wrapper around one codebase; each one is built natively for its platform.
+It's one Firebase project and one data model (see [docs/FIRESTORE_SCHEMA.md](docs/FIRESTORE_SCHEMA.md)) behind three separate, real front ends — a website, a native iOS app, and a native Android app. I deliberately didn't build this as one cross-platform codebase wrapped three ways; each app is written natively for its platform.
 
 ## Tech stack
 
@@ -47,7 +47,7 @@ One Firebase project (Auth + Firestore), one data model (see [docs/FIRESTORE_SCH
 
 ## Getting started
 
-### 1. Create a Firebase project
+### 1. Set up a Firebase project
 
 - Go to the [Firebase Console](https://console.firebase.google.com) → Add project
 - Build → Authentication → Sign-in method → enable Google
@@ -68,7 +68,7 @@ cp .env.local.example .env.local   # fill in your Firebase web app config
 npm run dev
 ```
 
-Visit `http://localhost:3000`. It runs on mock data with sign-in disabled by default, so you can preview it right away even without a Firebase project set up.
+Visit `http://localhost:3000`. It ships with sign-in disabled and mock data baked in, so you can click around and see the whole thing working even if you skip the Firebase setup entirely.
 
 ### 3. Run the iOS app
 
@@ -78,6 +78,6 @@ See [apps/ios/README.md](apps/ios/README.md) — open `PeerScholar.xcodeproj` in
 
 See [apps/android/README.md](apps/android/README.md) — open `apps/android` in Android Studio, add your `google-services.json`, and run.
 
-## Status
+## Where things stand
 
-Early-stage MVP. The website, iOS app, and Android app all run today on mock data with real Google Sign-In wired up (once you drop in your own Firebase config). Live video and real payments are designed into the data model but not yet hooked up to a live processor — see the [roadmap](docs/ROADMAP.md) for what's next.
+This is still an early MVP, to be clear. The website, iOS app, and Android app all work today and run on mock data, with real Google Sign-In wired up once you plug in your own Firebase config. Live video and real payments are both designed into the data model already, but I haven't connected either to a live processor yet — that's next. See [docs/ROADMAP.md](docs/ROADMAP.md) for what I'm planning to build after that.
