@@ -97,22 +97,10 @@ in Xcode, add your `GoogleService-Info.plist`, and run.
 See [apps/android/README.md](apps/android/README.md) — open `apps/android`
 in Android Studio, add your `google-services.json`, and run.
 
-## Hosting the website on GitHub Pages
-
-1. Push this repo to a GitHub repo you own.
-2. In the repo's **Settings → Pages**, set **Source** to "GitHub Actions".
-3. In **Settings → Secrets and variables → Actions**, add your Firebase web
-   config as repo secrets: `FIREBASE_API_KEY`, `FIREBASE_AUTH_DOMAIN`,
-   `FIREBASE_PROJECT_ID`, `FIREBASE_STORAGE_BUCKET`,
-   `FIREBASE_MESSAGING_SENDER_ID`, `FIREBASE_APP_ID`.
-4. Push to `main` — [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml)
-   builds the site as a static export and deploys it automatically.
-5. In Firebase Console → Authentication → Settings → **Authorized domains**,
-   add your `*.github.io` domain so Google Sign-In works there too.
 
 ## Status
 
-This is an early-stage student project. The website, iOS app, and Android
+This is an early-stage student project MVP. The website, iOS app, and Android
 app all run today on mock data with real Google Sign-In wired up (once you
 add your own Firebase project's config). Live video and real payments are
 designed into the data model but not yet connected to a live processor —
