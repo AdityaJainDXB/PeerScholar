@@ -11,6 +11,11 @@ const nextConfig = {
   output: "export",
   basePath,
   assetPrefix: basePath,
+  // Emit `route/index.html` instead of `route.html`. On GitHub Pages this
+  // makes URLs with a trailing slash resolve (they 404 otherwise), and it
+  // fixes the home route's RSC prefetch, which otherwise requests
+  // `/<basePath>.txt` — a path that can't exist — on every page load.
+  trailingSlash: true,
   images: {
     // next/image's optimizer needs a server; static export has none, and
     // Google avatar URLs are already served pre-sized.
