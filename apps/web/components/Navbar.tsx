@@ -5,8 +5,9 @@ import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { useAuth } from "@/lib/AuthProvider";
-import { signInWithGoogle, signOutOfFirebase, isFirebaseConfigured } from "@/lib/firebaseClient";
+import { signInWithGoogle, signOutOfFirebase, describeAuthError } from "@/lib/firebaseClient";
 import { withBasePath } from "@/lib/basePath";
+import { useToast } from "@/components/Toast";
 
 const learnerLinks = [
   { href: "/browse", label: "Browse" },
@@ -21,6 +22,7 @@ const teacherLinks = [
 export default function Navbar() {
   const { user, loading, viewMode, setViewMode } = useAuth();
   const pathname = usePathname();
+  const { toast } = useToast();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -28,12 +30,20 @@ export default function Navbar() {
     setError(null);
     setBusy(true);
     try {
-      await signInWithGoogle();
+      const signedIn = await signInWithGoogle();
+      if (signedIn) toast(`Welcome, ${signedIn.displayName?.split(" ")[0] ?? "friend"}!`);
     } catch (e) {
-      setError(isFirebaseConfigured ? "Sign-in failed. Try again." : "Connect Firebase first — see README.");
+      // Show the real reason (unauthorized domain, popup blocked, provider
+      // disabled…) instead of a generic failure that hides a config problem.
+      setError(describeAuthError(e));
     } finally {
       setBusy(false);
     }
+  }
+
+  async function handleSignOut() {
+    await signOutOfFirebase();
+    toast("Signed out.", "info");
   }
 
   const links = viewMode === "teacher" ? teacherLinks : learnerLinks;
@@ -64,8 +74,6 @@ export default function Navbar() {
         </nav>
 
         <div className="flex items-center gap-3">
-          {error && <span className="hidden text-xs text-rose-600 sm:inline">{error}</span>}
-
           {!loading && user && (
             <div className="relative flex items-center rounded-full bg-slate-100 p-0.5 text-xs font-semibold">
               <span
@@ -106,8 +114,8 @@ export default function Navbar() {
                 {user.displayName?.split(" ")[0]}
               </span>
               <button
-                onClick={() => signOutOfFirebase()}
-                className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm font-medium text-slate-600 hover:bg-slate-50"
+                onClick={handleSignOut}
+                className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm font-medium text-slate-600 transition hover:bg-slate-50"
               >
                 Sign out
               </button>
@@ -133,6 +141,24 @@ export default function Navbar() {
             </Link>
           ))}
         </nav>
+      )}
+
+      {error && (
+        <div className="animate-fade-in border-t border-rose-200 bg-rose-50">
+          <div className="mx-auto flex max-w-6xl items-start gap-3 px-4 py-3">
+            <span aria-hidden="true" className="mt-0.5 text-rose-600">
+              ⚠
+            </span>
+            <p className="flex-1 text-sm text-rose-800">{error}</p>
+            <button
+              onClick={() => setError(null)}
+              aria-label="Dismiss"
+              className="shrink-0 rounded px-2 text-sm font-medium text-rose-600 transition hover:bg-rose-100"
+            >
+              Dismiss
+            </button>
+          </div>
+        </div>
       )}
     </header>
   );

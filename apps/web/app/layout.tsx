@@ -4,6 +4,8 @@ import "./globals.css";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { AuthProvider } from "@/lib/AuthProvider";
+import { AppStoreProvider } from "@/lib/AppStore";
+import { ToastProvider } from "@/components/Toast";
 
 const jakarta = Plus_Jakarta_Sans({ subsets: ["latin"], variable: "--font-jakarta" });
 
@@ -16,11 +18,15 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" className={jakarta.variable}>
       <body className="flex min-h-screen flex-col font-sans">
-        <AuthProvider>
-          <Navbar />
-          <main className="flex-1">{children}</main>
-          <Footer />
-        </AuthProvider>
+        <ToastProvider>
+          <AuthProvider>
+            <AppStoreProvider>
+              <Navbar />
+              <main className="flex-1">{children}</main>
+              <Footer />
+            </AppStoreProvider>
+          </AuthProvider>
+        </ToastProvider>
       </body>
     </html>
   );

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { signInWithGoogle, isFirebaseConfigured } from "@/lib/firebaseClient";
+import { signInWithGoogle, describeAuthError } from "@/lib/firebaseClient";
 import { ensureProfile } from "@/lib/profile";
 import type { AgeBracket, UserRole } from "@shared/types";
 
@@ -19,16 +19,13 @@ export default function SignupPage() {
     setBusy(true);
     try {
       const user = await signInWithGoogle();
-      if (!user) throw new Error("no user");
+      // Null means a redirect is in flight — nothing more to do on this page.
+      if (!user) return;
       const ageBracket: AgeBracket = isMinor ? "13_to_17" : "18_plus";
       await ensureProfile(user, { role, ageBracket, guardianEmail: guardianEmail || undefined });
       router.push(role === "tutor" ? "/dashboard/tutor" : "/dashboard/student");
     } catch (e) {
-      setError(
-        isFirebaseConfigured
-          ? "Sign-in didn't go through — try again."
-          : "Firebase isn't connected yet. Add your project keys to apps/web/.env.local (see README) to enable real sign-in."
-      );
+      setError(describeAuthError(e));
     } finally {
       setBusy(false);
     }
@@ -74,7 +71,9 @@ export default function SignupPage() {
         </div>
       )}
 
-      {error && <p className="mt-4 text-sm text-rose-600">{error}</p>}
+      {error && (
+        <p className="mt-4 rounded-lg border border-rose-200 bg-rose-50 p-3 text-sm text-rose-800">{error}</p>
+      )}
 
       <button
         onClick={handleContinue}

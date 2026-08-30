@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useEffect, useState } from "react";
 import type { User } from "firebase/auth";
-import { subscribeToAuthState } from "./firebaseClient";
+import { subscribeToAuthState, completeRedirectSignIn } from "./firebaseClient";
 
 export type ViewMode = "learner" | "teacher";
 
@@ -28,6 +28,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [viewMode, setViewModeState] = useState<ViewMode>("learner");
 
   useEffect(() => {
+    // If we're returning from a redirect-based sign-in, settle it before the
+    // listener reports a signed-out state.
+    void completeRedirectSignIn();
     const unsubscribe = subscribeToAuthState((u) => {
       setUser(u);
       setLoading(false);
