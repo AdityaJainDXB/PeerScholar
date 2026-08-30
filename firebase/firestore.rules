@@ -40,6 +40,15 @@ service cloud.firestore {
       }
     }
 
+    // A learner's own progress state (enrollments, completed lessons,
+    // bookings) kept as one document per user so clients can sync it in a
+    // single read/write. Strictly private — unlike `profiles`, which is
+    // publicly readable for tutor browsing, what someone is studying is
+    // nobody else's business.
+    match /learnerState/{userId} {
+      allow read, write: if isOwner(userId);
+    }
+
     match /enrollments/{enrollmentId} {
       allow read, write: if isSignedIn() && resource.data.studentId == request.auth.uid;
       allow create: if isSignedIn() && request.resource.data.studentId == request.auth.uid;

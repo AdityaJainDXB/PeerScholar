@@ -65,5 +65,8 @@ dependencies {
     implementation("com.google.firebase:firebase-auth-ktx")
     implementation("com.google.firebase:firebase-firestore-ktx")
 
+    // Lets Firebase's Task API be awaited from coroutines (Task.await())
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.8.1")
+
     debugImplementation("androidx.compose.ui:ui-tooling")
 }

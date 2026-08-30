@@ -1,18 +1,27 @@
 "use client";
 
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import type { Course, LiveSession } from "@shared/types";
+import { useAuth } from "./AuthProvider";
+import {
+  EMPTY_LEARNER_STATE,
+  fetchLearnerState,
+  mergeLearnerState,
+  saveLearnerState,
+  type LearnerState,
+} from "./learnerState";
 
 /**
- * Client-side app state for the prototype: enrollments, lesson progress,
- * session bookings, QA decisions, and tutor-created content.
+ * Client-side app state: enrollments, lesson progress, session bookings, QA
+ * decisions, and tutor-created content.
  *
- * This persists to localStorage rather than Firestore because the site ships
- * as a static export and runs on mock data by default — so the whole product
- * flow is explorable without anyone having to provision a backend first.
- * The shapes here intentionally mirror the Firestore collections documented in
- * docs/FIRESTORE_SCHEMA.md, so swapping the implementation for real writes is
- * a change inside this file rather than across every screen.
+ * Two layers, deliberately:
+ *  - localStorage always. The site is a static export that runs on mock data,
+ *    so the whole product flow stays explorable signed-out and offline.
+ *  - Firestore when signed in. Learning progress syncs to `learnerState/{uid}`
+ *    so it follows the person across devices. Every cloud call is best-effort:
+ *    if Firestore is unreachable, rules aren't deployed, or the project isn't
+ *    configured, the app keeps working locally instead of breaking.
  */
 
 const STORAGE_KEY = "peerscholar:store:v1";
@@ -37,9 +46,13 @@ const EMPTY: StoreShape = {
   createdSessions: [],
 };
 
+export type SyncStatus = "local" | "syncing" | "synced" | "error";
+
 interface AppStoreValue extends StoreShape {
   /** False until localStorage has been read, so SSG markup and first client render match. */
   hydrated: boolean;
+  /** Whether learning progress is currently backed by Firestore. */
+  syncStatus: SyncStatus;
   isEnrolled: (courseId: string) => boolean;
   enroll: (courseId: string) => void;
   unenroll: (courseId: string) => void;
@@ -58,8 +71,10 @@ interface AppStoreValue extends StoreShape {
 const AppStoreContext = createContext<AppStoreValue | null>(null);
 
 export function AppStoreProvider({ children }: { children: React.ReactNode }) {
+  const { user } = useAuth();
   const [state, setState] = useState<StoreShape>(EMPTY);
   const [hydrated, setHydrated] = useState(false);
+  const [syncStatus, setSyncStatus] = useState<SyncStatus>("local");
 
   useEffect(() => {
     try {
@@ -79,6 +94,67 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
       // storage full or blocked (private mode) — state still works in-memory
     }
   }, [state, hydrated]);
+
+  // On sign-in, pull cloud state and union it with whatever was built up
+  // locally, then push the result back so both sides agree.
+  const syncedUid = useRef<string | null>(null);
+  useEffect(() => {
+    if (!hydrated) return;
+
+    if (!user) {
+      syncedUid.current = null;
+      setSyncStatus("local");
+      return;
+    }
+    if (syncedUid.current === user.uid) return;
+    syncedUid.current = user.uid;
+
+    let cancelled = false;
+    setSyncStatus("syncing");
+
+    (async () => {
+      try {
+        const remote = (await fetchLearnerState(user.uid)) ?? EMPTY_LEARNER_STATE;
+        if (cancelled) return;
+
+        let merged: LearnerState = EMPTY_LEARNER_STATE;
+        setState((s) => {
+          merged = mergeLearnerState(
+            { enrollments: s.enrollments, completedLessons: s.completedLessons, bookings: s.bookings },
+            remote
+          );
+          return { ...s, ...merged };
+        });
+
+        await saveLearnerState(user.uid, merged);
+        if (!cancelled) setSyncStatus("synced");
+      } catch {
+        // Rules not deployed, offline, or project misconfigured — the local
+        // layer already has everything, so degrade instead of failing.
+        if (!cancelled) setSyncStatus("error");
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [user, hydrated]);
+
+  // Push subsequent changes up, debounced so rapid actions (ticking through
+  // lessons) don't turn into a write per keystroke.
+  useEffect(() => {
+    if (!hydrated || !user || syncStatus === "syncing") return;
+    const t = setTimeout(() => {
+      saveLearnerState(user.uid, {
+        enrollments: state.enrollments,
+        completedLessons: state.completedLessons,
+        bookings: state.bookings,
+      })
+        .then(() => setSyncStatus("synced"))
+        .catch(() => setSyncStatus("error"));
+    }, 800);
+    return () => clearTimeout(t);
+  }, [state.enrollments, state.completedLessons, state.bookings, user, hydrated, syncStatus]);
 
   const isEnrolled = useCallback(
     (courseId: string) => state.enrollments.includes(courseId),
@@ -150,6 +226,7 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
     () => ({
       ...state,
       hydrated,
+      syncStatus,
       isEnrolled,
       enroll,
       unenroll,
@@ -167,6 +244,7 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
     [
       state,
       hydrated,
+      syncStatus,
       isEnrolled,
       enroll,
       unenroll,

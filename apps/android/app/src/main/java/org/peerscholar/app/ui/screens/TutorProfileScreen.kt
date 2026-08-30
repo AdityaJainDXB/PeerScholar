@@ -13,10 +13,11 @@ import org.peerscholar.app.data.MockData
 import org.peerscholar.app.ui.components.Avatar
 import org.peerscholar.app.ui.components.CourseRow
 import org.peerscholar.app.ui.components.RatingStars
+import org.peerscholar.app.data.AppStore
 import org.peerscholar.app.ui.components.SessionCard
 
 @Composable
-fun TutorProfileScreen(tutorId: String, onCourseClick: (String) -> Unit) {
+fun TutorProfileScreen(tutorId: String, onCourseClick: (String) -> Unit, store: AppStore) {
     val tutor = MockData.tutors.first { it.id == tutorId }
     val sessions = MockData.liveSessions.filter { it.tutorId == tutorId }
     val courses = MockData.courses.filter { it.tutorId == tutorId }
@@ -37,7 +38,7 @@ fun TutorProfileScreen(tutorId: String, onCourseClick: (String) -> Unit) {
             Spacer(Modifier.height(20.dp))
             Text("Book a live session", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
             Spacer(Modifier.height(8.dp))
-            sessions.forEach { s -> SessionCard(s); Spacer(Modifier.height(8.dp)) }
+            sessions.forEach { s -> SessionCard(s, store); Spacer(Modifier.height(8.dp)) }
         }
 
         if (courses.isNotEmpty()) {

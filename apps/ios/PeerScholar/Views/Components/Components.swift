@@ -152,9 +152,29 @@ struct TutorRow: View {
 
 struct SessionCard: View {
     let session: LiveSession
+    @EnvironmentObject var store: AppStore
+    @State private var showConfirm = false
+
+    private var booked: Bool { store.isBooked(session.id) }
+    private var spotsLeft: Int { max(0, session.spotsLeft - (booked ? 1 : 0)) }
+    private var isFull: Bool { spotsLeft <= 0 && !booked }
+    private var isFree: Bool { session.priceCents == 0 }
+
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            Thumbnail(seed: session.id, height: 90, badge: "● Live")
+            ZStack(alignment: .topTrailing) {
+                Thumbnail(seed: session.id, height: 90, badge: "● Live")
+                if booked {
+                    Text("BOOKED")
+                        .font(.caption2.weight(.bold))
+                        .foregroundStyle(.white)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 3)
+                        .background(.green)
+                        .clipShape(Capsule())
+                        .padding(8)
+                }
+            }
             VStack(alignment: .leading, spacing: 6) {
                 SubjectTag(subject: session.subject)
                 Text(session.title).font(.headline)
@@ -162,24 +182,67 @@ struct SessionCard: View {
                 Text(session.scheduledAt.formatted(date: .abbreviated, time: .shortened) + " · \(session.durationMinutes) min")
                     .font(.caption).foregroundStyle(.secondary)
                 HStack {
-                    Text("\(session.spotsLeft) of \(session.maxParticipants) spots left")
-                        .font(.caption).foregroundStyle(.secondary)
+                    Text(isFull ? "Fully booked" : "\(spotsLeft) of \(session.maxParticipants) spots left")
+                        .font(.caption)
+                        .foregroundStyle(isFull ? .red : .secondary)
                     Spacer()
-                    Text(session.priceDisplay).font(.subheadline.weight(.bold))
+                    Text(isFree ? "Free" : session.priceDisplay).font(.subheadline.weight(.bold))
                 }
-                Button("Book session") {}
+
+                if booked {
+                    HStack(spacing: 8) {
+                        if let joinUrl = session.joinUrl, let url = URL(string: joinUrl) {
+                            Link(destination: url) {
+                                Text("Join")
+                                    .font(.subheadline.weight(.semibold))
+                                    .frame(maxWidth: .infinity)
+                                    .padding(.vertical, 10)
+                                    .background(Color.brand)
+                                    .foregroundStyle(.white)
+                                    .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+                            }
+                        }
+                        Button("Cancel") { store.cancelBooking(session.id) }
+                            .font(.subheadline.weight(.medium))
+                            .padding(.horizontal, 14)
+                            .padding(.vertical, 10)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 10, style: .continuous)
+                                    .stroke(Color.gray.opacity(0.4))
+                            )
+                    }
+                } else {
+                    Button {
+                        showConfirm = true
+                    } label: {
+                        Text(isFull ? "Fully booked" : "Book session")
+                            .font(.subheadline.weight(.semibold))
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 10)
+                            .background(isFull ? Color.gray.opacity(0.4) : Color.brand)
+                            .foregroundStyle(.white)
+                            .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+                    }
                     .buttonStyle(ScaleButtonStyle())
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 10)
-                    .background(Color.brand)
-                    .foregroundStyle(.white)
-                    .fontWeight(.semibold)
-                    .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+                    .disabled(isFull)
+                }
             }
             .padding(12)
         }
         .background(Color(.secondarySystemGroupedBackground))
         .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+        .confirmationDialog(
+            session.title,
+            isPresented: $showConfirm,
+            titleVisibility: .visible
+        ) {
+            Button(isFree ? "Confirm booking" : "Confirm — \(session.priceDisplay)") {
+                store.book(session.id)
+            }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("\(session.scheduledAt.formatted(date: .complete, time: .shortened)) · \(session.durationMinutes) minutes with \(session.tutorName). This prototype doesn't process real payments.")
+        }
     }
 }
 

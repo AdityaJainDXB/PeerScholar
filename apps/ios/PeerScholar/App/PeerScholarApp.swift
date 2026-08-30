@@ -28,13 +28,24 @@ class AppDelegate: NSObject, UIApplicationDelegate {
 struct PeerScholarApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
     @StateObject private var authManager = AuthManager()
+    @StateObject private var store = AppStore()
 
     var body: some Scene {
         WindowGroup {
             RootTabView()
                 .environmentObject(authManager)
+                .environmentObject(store)
                 .onOpenURL { url in
                     GIDSignIn.sharedInstance.handle(url)
+                }
+                // Pull cloud progress on sign-in; drop back to device-only
+                // storage on sign-out.
+                .task(id: authManager.isSignedIn) {
+                    if authManager.isSignedIn, let uid = LearnerSync.currentUid {
+                        await store.syncOnSignIn(uid: uid)
+                    } else {
+                        store.signedOut()
+                    }
                 }
         }
     }

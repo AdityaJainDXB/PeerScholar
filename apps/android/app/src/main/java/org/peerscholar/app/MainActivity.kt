@@ -21,18 +21,24 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import org.peerscholar.app.auth.AuthViewModel
+import org.peerscholar.app.data.AppStore
+import org.peerscholar.app.data.LearnerSync
 import org.peerscholar.app.ui.screens.*
 import org.peerscholar.app.ui.theme.PeerScholarTheme
 
 class MainActivity : ComponentActivity() {
     private val authViewModel: AuthViewModel by viewModels()
+    private val appStore: AppStore by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         authViewModel.refresh()
+        appStore.attach(this)
+        // Pull cloud progress if there's already a signed-in session.
+        if (LearnerSync.currentUid() != null) appStore.syncOnSignIn()
         setContent {
             PeerScholarTheme {
-                PeerScholarApp(authViewModel)
+                PeerScholarApp(authViewModel, appStore)
             }
         }
     }
@@ -48,7 +54,7 @@ private val tabs = listOf(
 )
 
 @Composable
-fun PeerScholarApp(authViewModel: AuthViewModel) {
+fun PeerScholarApp(authViewModel: AuthViewModel, appStore: AppStore) {
     val navController = rememberNavController()
 
     Scaffold(
@@ -80,16 +86,27 @@ fun PeerScholarApp(authViewModel: AuthViewModel) {
                     onTutorClick = { navController.navigate("tutor/$it") },
                 )
             }
-            composable("browse") { BrowseScreen() }
-            composable("dashboard") { DashboardScreen(authViewModel) }
-            composable("profile") { ProfileScreen(authViewModel) }
+            composable("browse") { BrowseScreen(appStore) }
+            composable("dashboard") { DashboardScreen(authViewModel, appStore) }
+            composable("profile") { ProfileScreen(authViewModel, appStore) }
             composable("course/{id}") { backStackEntry ->
-                CourseDetailScreen(backStackEntry.arguments?.getString("id").orEmpty())
+                CourseDetailScreen(
+                    courseId = backStackEntry.arguments?.getString("id").orEmpty(),
+                    store = appStore,
+                    onOpenPlayer = { navController.navigate("learn/$it") },
+                )
+            }
+            composable("learn/{id}") { backStackEntry ->
+                CoursePlayerScreen(
+                    courseId = backStackEntry.arguments?.getString("id").orEmpty(),
+                    store = appStore,
+                )
             }
             composable("tutor/{id}") { backStackEntry ->
                 TutorProfileScreen(
                     tutorId = backStackEntry.arguments?.getString("id").orEmpty(),
                     onCourseClick = { navController.navigate("course/$it") },
+                    store = appStore,
                 )
             }
         }

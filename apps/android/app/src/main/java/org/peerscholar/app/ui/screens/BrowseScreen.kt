@@ -7,11 +7,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import org.peerscholar.app.data.MockData
+import org.peerscholar.app.data.AppStore
 import org.peerscholar.app.ui.components.SessionCard
 
 @Composable
-fun BrowseScreen() {
+fun BrowseScreen(store: AppStore) {
     LazyColumn(Modifier.fillMaxSize().padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-        items(MockData.liveSessions) { session -> SessionCard(session) }
+        items(MockData.liveSessions) { session -> SessionCard(session, store) }
     }
 }

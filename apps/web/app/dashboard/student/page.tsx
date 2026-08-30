@@ -8,7 +8,7 @@ import { lessonsForCourse } from "@/lib/lessons";
 import { mockCourses, mockLiveSessions } from "@/lib/mockData";
 
 export default function StudentDashboard() {
-  const { enrollments, bookings, courseProgress, hydrated } = useAppStore();
+  const { enrollments, bookings, courseProgress, hydrated, syncStatus } = useAppStore();
 
   const enrolledCourses = useMemo(
     () => (hydrated ? mockCourses.filter((c) => enrollments.includes(c.id)) : []),
@@ -33,9 +33,10 @@ export default function StudentDashboard() {
   return (
     <div className="mx-auto max-w-5xl px-4 py-12">
       <h1 className="animate-fade-in-up text-3xl font-bold text-slate-900">My Learning</h1>
-      <p className="stagger-1 animate-fade-in-up mt-1 text-slate-600">
-        Pick up where you left off, or join a live class.
-      </p>
+      <div className="stagger-1 animate-fade-in-up mt-1 flex flex-wrap items-center gap-x-3 gap-y-1">
+        <p className="text-slate-600">Pick up where you left off, or join a live class.</p>
+        {hydrated && <SyncBadge status={syncStatus} />}
+      </div>
 
       <div className="stagger-1 animate-fade-in-up mt-6 grid grid-cols-3 gap-4">
         <StatCard label="Courses enrolled" value={String(enrolledCourses.length)} />
@@ -170,6 +171,31 @@ export default function StudentDashboard() {
         )}
       </section>
     </div>
+  );
+}
+
+function SyncBadge({ status }: { status: "local" | "syncing" | "synced" | "error" }) {
+  const config = {
+    local: { text: "Saved on this device", cls: "bg-slate-100 text-slate-600", dot: "bg-slate-400" },
+    syncing: { text: "Syncing…", cls: "bg-brand-50 text-brand-700", dot: "bg-brand-500 animate-pulse" },
+    synced: { text: "Synced to your account", cls: "bg-emerald-50 text-emerald-700", dot: "bg-emerald-500" },
+    error: { text: "Saved locally — sync unavailable", cls: "bg-amber-50 text-amber-800", dot: "bg-amber-500" },
+  }[status];
+
+  return (
+    <span
+      className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium ${config.cls}`}
+      title={
+        status === "local"
+          ? "Sign in to sync your progress across devices."
+          : status === "error"
+            ? "Your progress is safe on this device, but couldn't reach Firestore."
+            : undefined
+      }
+    >
+      <span className={`h-1.5 w-1.5 rounded-full ${config.dot}`} aria-hidden="true" />
+      {config.text}
+    </span>
   );
 }
 

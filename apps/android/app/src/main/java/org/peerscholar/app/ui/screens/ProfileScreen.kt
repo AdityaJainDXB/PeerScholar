@@ -17,13 +17,20 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.runtime.LaunchedEffect
 import org.peerscholar.app.auth.AuthViewModel
+import org.peerscholar.app.data.AppStore
 import org.peerscholar.app.ui.theme.Brand600
 
 @Composable
-fun ProfileScreen(authViewModel: AuthViewModel) {
+fun ProfileScreen(authViewModel: AuthViewModel, store: AppStore) {
     val context = LocalContext.current
     val state by authViewModel.state.collectAsState()
+
+    // Pull cloud progress once a sign-in lands; drop to device-only on sign-out.
+    LaunchedEffect(state.isSignedIn) {
+        if (state.isSignedIn) store.syncOnSignIn() else store.signedOut()
+    }
 
     Column(
         Modifier.fillMaxSize().padding(32.dp),

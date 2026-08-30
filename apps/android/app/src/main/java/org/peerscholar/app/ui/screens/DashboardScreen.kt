@@ -2,6 +2,8 @@ package org.peerscholar.app.ui.screens
 
 import android.content.ClipData
 import android.content.ClipboardManager
+import android.content.Intent
+import android.net.Uri
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
@@ -26,6 +28,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import org.peerscholar.app.auth.AuthViewModel
 import org.peerscholar.app.auth.ViewMode
+import androidx.compose.ui.graphics.Color
+import org.peerscholar.app.data.AppStore
+import org.peerscholar.app.data.lessonsForCourse
 import org.peerscholar.app.data.MockData
 import org.peerscholar.app.ui.components.Avatar
 import org.peerscholar.app.ui.components.Card
@@ -34,7 +39,7 @@ import org.peerscholar.app.ui.theme.Brand600
 import java.text.DateFormat
 
 @Composable
-fun DashboardScreen(authViewModel: AuthViewModel) {
+fun DashboardScreen(authViewModel: AuthViewModel, store: AppStore) {
     val state by authViewModel.state.collectAsState()
 
     Column(Modifier.fillMaxSize().padding(16.dp)) {
@@ -52,7 +57,7 @@ fun DashboardScreen(authViewModel: AuthViewModel) {
             label = "dashboardMode",
         ) { showTeacher ->
             Column {
-                if (showTeacher) TeacherDashboard() else LearnerDashboard()
+                if (showTeacher) TeacherDashboard() else LearnerDashboard(store)
             }
         }
     }
@@ -87,10 +92,29 @@ private fun SegmentedToggle(selected: ViewMode, onSelect: (ViewMode) -> Unit) {
 }
 
 @Composable
-private fun LearnerDashboard() {
-    Text("Live classes", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+private fun LearnerDashboard(store: AppStore) {
+    val context = LocalContext.current
+    val state by store.state.collectAsState()
+
+    val bookedSessions = MockData.liveSessions.filter { state.bookings.contains(it.id) }
+    val shownSessions = bookedSessions.ifEmpty { MockData.liveSessions.take(3) }
+    val enrolledCourses = MockData.courses.filter { state.enrollments.contains(it.id) }
+
+    Text(
+        state.syncStatus.label,
+        style = MaterialTheme.typography.labelSmall,
+        color = Color.Gray,
+    )
+    Spacer(Modifier.height(12.dp))
+
+    Text(
+        if (bookedSessions.isNotEmpty()) "Your live classes" else "Live classes you can join",
+        style = MaterialTheme.typography.titleLarge,
+        fontWeight = FontWeight.Bold,
+    )
     Spacer(Modifier.height(8.dp))
-    MockData.liveSessions.forEach { s ->
+    shownSessions.forEach { s ->
+        val booked = state.bookings.contains(s.id)
         Card(Modifier) {
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                 Row(Modifier.weight(1f), verticalAlignment = Alignment.CenterVertically) {
@@ -104,10 +128,17 @@ private fun LearnerDashboard() {
                         )
                     }
                 }
-                if (s.joinUrl != null) {
-                    Button(onClick = {}, colors = ButtonDefaults.buttonColors(containerColor = Brand600)) {
+                if (booked && s.joinUrl != null) {
+                    Button(
+                        onClick = {
+                            context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(s.joinUrl)))
+                        },
+                        colors = ButtonDefaults.buttonColors(containerColor = Brand600),
+                    ) {
                         Text("Join")
                     }
+                } else if (!booked) {
+                    OutlinedButton(onClick = { store.book(s.id) }) { Text("Book") }
                 }
             }
         }
@@ -117,21 +148,43 @@ private fun LearnerDashboard() {
     Spacer(Modifier.height(16.dp))
     Text("Continue learning", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
     Spacer(Modifier.height(8.dp))
-    MockData.courses.take(3).forEachIndexed { index, course ->
-        val progress = listOf(0.62f, 0.18f, 0.90f)[index % 3]
+
+    if (enrolledCourses.isEmpty()) {
         Card(Modifier) {
-            Column {
-                Thumbnail(course.id, height = 90, badge = course.subject)
-                Spacer(Modifier.height(10.dp))
-                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                    Text(course.title, style = MaterialTheme.typography.titleMedium)
-                    Text("${(progress * 100).toInt()}%", style = MaterialTheme.typography.bodySmall)
-                }
-                Spacer(Modifier.height(6.dp))
-                LinearProgressIndicator(progress = { progress }, color = Brand600, modifier = Modifier.fillMaxWidth())
+            Column(
+                Modifier.fillMaxWidth().padding(vertical = 24.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                Text("📚", style = MaterialTheme.typography.headlineMedium)
+                Spacer(Modifier.height(8.dp))
+                Text("You haven't enrolled in anything yet", fontWeight = FontWeight.SemiBold)
+                Spacer(Modifier.height(4.dp))
+                Text(
+                    "Browse peer-taught courses — lesson one is always free.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = Color.Gray,
+                )
             }
         }
-        Spacer(Modifier.height(8.dp))
+    } else {
+        enrolledCourses.forEach { course ->
+            val lessons = lessonsForCourse(course)
+            val progress = if (lessons.isEmpty()) 0f
+            else (state.completedLessons[course.id]?.size ?: 0).toFloat() / lessons.size
+            Card(Modifier) {
+                Column {
+                    Thumbnail(course.id, height = 90, badge = course.subject)
+                    Spacer(Modifier.height(10.dp))
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                        Text(course.title, style = MaterialTheme.typography.titleMedium)
+                        Text("${(progress * 100).toInt()}%", style = MaterialTheme.typography.bodySmall)
+                    }
+                    Spacer(Modifier.height(6.dp))
+                    LinearProgressIndicator(progress = { progress }, color = Brand600, modifier = Modifier.fillMaxWidth())
+                }
+            }
+            Spacer(Modifier.height(8.dp))
+        }
     }
 }
 

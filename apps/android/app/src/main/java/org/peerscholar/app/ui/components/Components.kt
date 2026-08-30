@@ -1,5 +1,7 @@
 package org.peerscholar.app.ui.components
 
+import android.content.Intent
+import android.net.Uri
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
@@ -18,9 +20,11 @@ import androidx.compose.ui.draw.graphicsLayer
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
+import org.peerscholar.app.data.AppStore
 import org.peerscholar.app.model.Course
 import org.peerscholar.app.model.LiveSession
 import org.peerscholar.app.model.Profile
@@ -153,14 +157,40 @@ fun TutorRow(tutor: Profile, onClick: () -> Unit) {
 }
 
 @Composable
-fun SessionCard(session: LiveSession, onBook: () -> Unit = {}) {
+fun SessionCard(session: LiveSession, store: AppStore) {
+    // Note: collected unconditionally — calling collectAsState() through a
+    // null-safe chain would make a composable invocation conditional, which
+    // breaks Compose's positional memoization.
+    val state by store.state.collectAsState()
+    val booked = state.bookings.contains(session.id)
+    val spotsLeft = (session.spotsLeft - if (booked) 1 else 0).coerceAtLeast(0)
+    val isFull = spotsLeft <= 0 && !booked
+    val isFree = session.priceCents == 0
+    val context = LocalContext.current
+    var showConfirm by remember { mutableStateOf(false) }
+
     ElevatedCard(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(14.dp),
         colors = CardDefaults.elevatedCardColors(containerColor = MaterialTheme.colorScheme.surface),
     ) {
         Column {
-            Thumbnail(session.id, height = 90, badge = "● Live")
+            Box {
+                Thumbnail(session.id, height = 90, badge = "● Live")
+                if (booked) {
+                    Text(
+                        "BOOKED",
+                        color = Color.White,
+                        fontWeight = FontWeight.Bold,
+                        style = MaterialTheme.typography.labelSmall,
+                        modifier = Modifier
+                            .align(Alignment.TopEnd)
+                            .padding(8.dp)
+                            .background(Color(0xFF16A34A), RoundedCornerShape(20.dp))
+                            .padding(horizontal = 8.dp, vertical = 3.dp),
+                    )
+                }
+            }
             Column(Modifier.padding(14.dp)) {
                 SubjectTag(session.subject)
                 Text(session.title, style = MaterialTheme.typography.titleMedium)
@@ -171,14 +201,81 @@ fun SessionCard(session: LiveSession, onBook: () -> Unit = {}) {
                 )
                 Spacer(Modifier.height(6.dp))
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                    Text("${session.spotsLeft} of ${session.maxParticipants} spots left", style = MaterialTheme.typography.bodySmall, color = Color.Gray)
-                    Text(session.priceDisplay, fontWeight = FontWeight.Bold)
+                    Text(
+                        if (isFull) "Fully booked" else "$spotsLeft of ${session.maxParticipants} spots left",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = if (isFull) Color(0xFFE11D48) else Color.Gray,
+                    )
+                    Text(if (isFree) "Free" else session.priceDisplay, fontWeight = FontWeight.Bold)
                 }
                 Spacer(Modifier.height(8.dp))
-                Button(onClick = onBook, modifier = Modifier.fillMaxWidth(), colors = ButtonDefaults.buttonColors(containerColor = Brand600)) {
-                    Text("Book session")
+
+                if (booked) {
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        session.joinUrl?.let { url ->
+                            Button(
+                                onClick = {
+                                    context.startActivity(
+                                        Intent(Intent.ACTION_VIEW, Uri.parse(url))
+                                    )
+                                },
+                                modifier = Modifier.weight(1f),
+                                colors = ButtonDefaults.buttonColors(containerColor = Brand600),
+                            ) { Text("Join") }
+                        }
+                        OutlinedButton(onClick = { store.cancelBooking(session.id) }) { Text("Cancel") }
+                    }
+                } else {
+                    Button(
+                        onClick = { showConfirm = true },
+                        enabled = !isFull,
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = ButtonDefaults.buttonColors(containerColor = Brand600),
+                    ) {
+                        Text(if (isFull) "Fully booked" else "Book session")
+                    }
                 }
             }
         }
+    }
+
+    if (showConfirm) {
+        AlertDialog(
+            onDismissRequest = { showConfirm = false },
+            title = { Text("Confirm your booking") },
+            text = {
+                Column {
+                    Text(session.title, fontWeight = FontWeight.SemiBold)
+                    Text(
+                        "with ${session.tutorName} · ${session.durationMinutes} minutes",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = Color.Gray,
+                    )
+                    Spacer(Modifier.height(12.dp))
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                        Text("Total", fontWeight = FontWeight.Bold)
+                        Text(if (isFree) "$0.00" else session.priceDisplay, fontWeight = FontWeight.Bold)
+                    }
+                    if (!isFree) {
+                        Spacer(Modifier.height(10.dp))
+                        Text(
+                            "This prototype doesn't process real payments.",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = Color.Gray,
+                        )
+                    }
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        store.book(session.id)
+                        showConfirm = false
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = Brand600),
+                ) { Text("Confirm booking") }
+            },
+            dismissButton = { TextButton(onClick = { showConfirm = false }) { Text("Cancel") } },
+        )
     }
 }
