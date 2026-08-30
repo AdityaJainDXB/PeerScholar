@@ -3,7 +3,9 @@
 import Link from "next/link";
 import { useMemo } from "react";
 import { VideoIcon } from "@/components/icons";
+import LocalTime, { useStartsSoon } from "@/components/LocalTime";
 import { useAppStore } from "@/lib/AppStore";
+import type { LiveSession } from "@shared/types";
 import { lessonsForCourse } from "@/lib/lessons";
 import { mockCourses, mockLiveSessions } from "@/lib/mockData";
 
@@ -52,57 +54,13 @@ export default function StudentDashboard() {
           </h2>
         </div>
         <div className="divide-y divide-slate-200 rounded-xl border border-slate-200 bg-white">
-          {(bookedSessions.length > 0 ? bookedSessions : suggestedSessions).map((s) => {
-            const startsInMs = new Date(s.scheduledAt).getTime() - Date.now();
-            const startsSoon = startsInMs < 1000 * 60 * 30;
-            const isBooked = bookedSessions.some((b) => b.id === s.id);
-            return (
-              <div
-                key={s.id}
-                className="flex flex-wrap items-center justify-between gap-3 px-4 py-4 transition hover:bg-slate-50"
-              >
-                <div className="flex items-center gap-3">
-                  <img
-                    src={`https://i.pravatar.cc/64?u=${s.tutorId}`}
-                    alt=""
-                    className="h-10 w-10 rounded-full object-cover shadow-sm ring-2 ring-white"
-                  />
-                  <div>
-                    <p className="font-medium text-slate-900">{s.title}</p>
-                    <p className="text-sm text-slate-500">
-                      with {s.tutorName} ·{" "}
-                      {new Date(s.scheduledAt).toLocaleString(undefined, {
-                        weekday: "short",
-                        hour: "numeric",
-                        minute: "2-digit",
-                      })}
-                    </p>
-                  </div>
-                </div>
-                {isBooked && s.joinUrl ? (
-                  <a
-                    href={s.joinUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                    className={`rounded-lg px-3 py-1.5 text-sm font-medium transition ${
-                      startsSoon
-                        ? "bg-brand-600 text-white hover:-translate-y-0.5 hover:bg-brand-700 hover:shadow-md"
-                        : "border border-slate-300 text-slate-600 hover:bg-slate-50"
-                    }`}
-                  >
-                    {startsSoon ? "Join now" : "Get link"}
-                  </a>
-                ) : (
-                  <Link
-                    href="/browse"
-                    className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm font-medium text-slate-600 transition hover:bg-slate-50"
-                  >
-                    Book a seat
-                  </Link>
-                )}
-              </div>
-            );
-          })}
+          {(bookedSessions.length > 0 ? bookedSessions : suggestedSessions).map((s) => (
+            <LiveSessionRow
+              key={s.id}
+              session={s}
+              isBooked={bookedSessions.some((b) => b.id === s.id)}
+            />
+          ))}
         </div>
       </section>
 
@@ -170,6 +128,53 @@ export default function StudentDashboard() {
           </div>
         )}
       </section>
+    </div>
+  );
+}
+
+function LiveSessionRow({ session, isBooked }: { session: LiveSession; isBooked: boolean }) {
+  const startsSoon = useStartsSoon(session.scheduledAt);
+
+  return (
+    <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-4 transition hover:bg-slate-50">
+      <div className="flex items-center gap-3">
+        <img
+          src={`https://i.pravatar.cc/64?u=${session.tutorId}`}
+          alt=""
+          className="h-10 w-10 rounded-full object-cover shadow-sm ring-2 ring-white"
+        />
+        <div>
+          <p className="font-medium text-slate-900">{session.title}</p>
+          <p className="text-sm text-slate-500">
+            with {session.tutorName} ·{" "}
+            <LocalTime
+              iso={session.scheduledAt}
+              options={{ weekday: "short", hour: "numeric", minute: "2-digit" }}
+            />
+          </p>
+        </div>
+      </div>
+      {isBooked && session.joinUrl ? (
+        <a
+          href={session.joinUrl}
+          target="_blank"
+          rel="noreferrer"
+          className={`rounded-lg px-3 py-1.5 text-sm font-medium transition ${
+            startsSoon
+              ? "bg-brand-600 text-white hover:-translate-y-0.5 hover:bg-brand-700 hover:shadow-md"
+              : "border border-slate-300 text-slate-600 hover:bg-slate-50"
+          }`}
+        >
+          {startsSoon ? "Join now" : "Get link"}
+        </a>
+      ) : (
+        <Link
+          href="/browse"
+          className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm font-medium text-slate-600 transition hover:bg-slate-50"
+        >
+          Book a seat
+        </Link>
+      )}
     </div>
   );
 }

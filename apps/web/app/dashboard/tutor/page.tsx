@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import Badge from "@/components/Badge";
+import LocalTime from "@/components/LocalTime";
 import CreateCourseModal from "@/components/CreateCourseModal";
 import ScheduleSessionModal from "@/components/ScheduleSessionModal";
 import { useToast } from "@/components/Toast";
@@ -231,13 +232,16 @@ function SessionRow({ session }: { session: LiveSession }) {
       <div>
         <p className="font-medium text-slate-900">{session.title}</p>
         <p className="text-sm text-slate-500">
-          {new Date(session.scheduledAt).toLocaleString(undefined, {
-            weekday: "short",
-            month: "short",
-            day: "numeric",
-            hour: "numeric",
-            minute: "2-digit",
-          })}{" "}
+          <LocalTime
+            iso={session.scheduledAt}
+            options={{
+              weekday: "short",
+              month: "short",
+              day: "numeric",
+              hour: "numeric",
+              minute: "2-digit",
+            }}
+          />{" "}
           · {session.bookedCount}/{session.maxParticipants} booked
         </p>
       </div>

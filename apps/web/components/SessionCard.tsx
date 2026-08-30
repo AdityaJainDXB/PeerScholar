@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Modal from "@/components/Modal";
+import LocalTime from "@/components/LocalTime";
 import { useToast } from "@/components/Toast";
 import { useAppStore } from "@/lib/AppStore";
 import { centsToDisplay, type LiveSession } from "@shared/types";
@@ -12,7 +13,6 @@ export default function SessionCard({ session }: { session: LiveSession }) {
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [booking, setBooking] = useState(false);
 
-  const date = new Date(session.scheduledAt);
   const booked = hydrated && isBooked(session.id);
   const spotsLeft = session.maxParticipants - session.bookedCount - (booked ? 1 : 0);
   const isFull = spotsLeft <= 0 && !booked;
@@ -60,13 +60,16 @@ export default function SessionCard({ session }: { session: LiveSession }) {
           <h3 className="font-semibold text-slate-900">{session.title}</h3>
           <p className="mt-1 text-sm text-slate-500">with {session.tutorName}</p>
           <p className="mt-2 text-sm text-slate-600">
-            {date.toLocaleString(undefined, {
-              weekday: "short",
-              month: "short",
-              day: "numeric",
-              hour: "numeric",
-              minute: "2-digit",
-            })}
+            <LocalTime
+              iso={session.scheduledAt}
+              options={{
+                weekday: "short",
+                month: "short",
+                day: "numeric",
+                hour: "numeric",
+                minute: "2-digit",
+              }}
+            />
             {" · "}
             {session.durationMinutes} min
           </p>
@@ -128,13 +131,16 @@ export default function SessionCard({ session }: { session: LiveSession }) {
             <div className="flex justify-between">
               <dt className="text-slate-600">When</dt>
               <dd className="text-right font-medium text-slate-900">
-                {date.toLocaleString(undefined, {
-                  weekday: "long",
-                  month: "short",
-                  day: "numeric",
-                  hour: "numeric",
-                  minute: "2-digit",
-                })}
+                <LocalTime
+                  iso={session.scheduledAt}
+                  options={{
+                    weekday: "long",
+                    month: "short",
+                    day: "numeric",
+                    hour: "numeric",
+                    minute: "2-digit",
+                  }}
+                />
               </dd>
             </div>
             <div className="flex justify-between">
