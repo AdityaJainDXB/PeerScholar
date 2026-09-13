@@ -2,47 +2,47 @@
 
 Peer-to-peer tutoring, run by students, for students.
 
-The idea came out of peer tutoring I was already doing in my community. Sitting with people who were stuck on something I'd covered a year earlier, it was obvious that a student who just went through the material is often better at explaining it than an adult tutor charging $60/hr. They remember which part was confusing, because they were confused by it recently.
+I got the idea from tutoring people in my own community. I'd sit with someone stuck on a topic I'd covered maybe a year before, and it kept being obvious that someone who *just* learned the material explains it better than an adult tutor charging $60/hr does. They still remember exactly which part was confusing, because they were confused by it recently too.
 
-The problem is that peer tutoring is completely unstructured. It's a friend doing you a favour, or a group chat, and there's no way to find someone good, no way to schedule properly, and no way to pay anyone for their time. PeerScholar is an attempt at putting structure around it. Students teach other students, live over video or through recorded courses, and the platform handles discovery, scheduling, payments and quality checks.
+The problem is peer tutoring has zero structure behind it. It's a favour from a friend, or someone in a group chat, and there's no real way to find someone good, no way to actually schedule anything, and definitely no way to pay someone for their time. PeerScholar is my attempt at fixing that. Students teach other students — live over video, or through a recorded course — and the platform takes care of discovery, scheduling, payments, and making sure the quality doesn't slip.
 
-This is a student project I built for my university application. It's a working prototype rather than mockups: a website plus native iOS and Android apps on a shared Firebase backend, with real Google Sign-In. The product and business planning I did is in `docs/`.
+I built this as a student project for my university application, and it's an actual working prototype, not mockups: a website plus native iOS and Android apps, all sharing one Firebase backend, with real Google Sign-In wired up. All the product and business planning is in `docs/`.
 
 ## How it works
 
-Learners search for a tutor or course by subject, then either book a live session or enrol in a recorded course.
+Learners search for a tutor or a course by subject, then either book a live session or enrol in a recorded one.
 
-Tutors are also high school or university students. They list what they can teach and either run live video sessions or record a course and upload it.
+Tutors are also just students — high school or university. They list what they can teach, and either run live sessions over video or record a course and upload it.
 
-There's a third role, QA Reviewer, also filled by students. They review courses before those go live and spot-check live sessions. This part matters more than it sounds. The whole pitch is that a student teaching you is as good as a paid adult tutor, and that falls apart immediately if the first course someone buys is bad.
+There's a third role too: QA Reviewer, also a student. They check courses before they go live and spot-check live sessions. This matters more than it sounds like it should — the whole pitch of the platform is "a student teaching you is as good as a paid tutor," and that falls apart the second someone's first course purchase turns out to be bad.
 
-PeerScholar takes a commission on paid sessions and course sales, and pays the rest out to tutors, plus a stipend to QA reviewers.
+PeerScholar takes a cut of paid sessions and course sales, pays the rest to the tutor, and pays QA reviewers a stipend on top.
 
-More detail: [docs/PRODUCT.md](docs/PRODUCT.md) for the feature set, [docs/BUSINESS_MODEL.md](docs/BUSINESS_MODEL.md) for how it makes money, [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for how it's built, [docs/ROADMAP.md](docs/ROADMAP.md) for what's next.
+If you want more detail: [docs/PRODUCT.md](docs/PRODUCT.md) covers the feature set, [docs/BUSINESS_MODEL.md](docs/BUSINESS_MODEL.md) covers how it makes money, [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) covers how it's built, and [docs/ROADMAP.md](docs/ROADMAP.md) covers what's next.
 
 ## Building it
 
-### Starting over in native
+### Why I threw out the first version
 
-I built the first version of the mobile app in Expo and React Native, and then threw it away and rewrote both apps natively, in Swift/SwiftUI for iOS and Kotlin/Compose for Android.
+I originally built the mobile app in Expo/React Native, then scrapped it and rewrote both apps natively — Swift/SwiftUI for iOS, Kotlin/Compose for Android.
 
-The reason was UI and graphics. Expo was fine for putting screens together, but I couldn't get the app to feel like a real app in it. The things I wanted, proper platform navigation, animation that doesn't stutter, controls that behave the way people expect on each OS, either weren't there or fought me the whole way. Rewriting it twice, once per platform, was more work than keeping one codebase. I still think it was the right call, because the whole point of shipping a native app instead of a website is that it feels native.
+It came down to UI and feel. Expo was fine for laying out screens, but I couldn't get it to feel like a real app. Proper platform navigation, animations that don't stutter, controls that behave the way people already expect on their OS — either Expo didn't give me those out of the box, or I was fighting it the entire time to get close. Rewriting the app twice, once per platform, was genuinely more work than one shared codebase would've been. I still think it was worth it, because the entire point of building a native app instead of just a website is that it should feel native.
 
-### The bug that cost me the most time
+### The bug that ate my week
 
-The Expo dev server kept dying with `EMFILE: too many open files`. The obvious fix is raising the file descriptor limit, so I raised it, and it kept dying. I pushed `ulimit -n` all the way up to 1,048,576, which is an absurd number, and it still kept dying.
+The Expo dev server kept crashing with `EMFILE: too many open files`. Obvious fix: raise the file descriptor limit. So I raised it. Still crashed. I pushed `ulimit -n` up to 1,048,576 — a genuinely ridiculous number — and it *still* crashed.
 
-It wasn't the file descriptor limit at all. macOS also has a system-wide cap on vnodes, which is the kernel's handle for an open file, and mine was completely maxed out at 245,880 of 245,880. So it didn't matter what I set my own process limit to. The machine had no handles left to give out. Restarting fixed it.
+Turns out it had nothing to do with my process's file descriptor limit at all. macOS has a separate, system-wide cap on vnodes (the kernel's handle for an open file), and mine was sitting completely maxed out — 245,880 out of 245,880. Didn't matter what I set for my own process, there were no handles left anywhere on the machine to hand out. A restart fixed it in about ten seconds.
 
-I lost hours to that one because the error message points you straight at the wrong setting, and the fix that everyone online suggests is the fix that doesn't work.
+That one cost me hours because the error message points you at exactly the wrong knob to turn, and the fix that everyone online recommends first doesn't actually do anything.
 
-### Getting it deployed
+### Getting it live
 
-Two more that were educational, both of which only broke in production and worked fine locally:
+Two more bugs, both of which only showed up in production and worked fine locally:
 
-The site deployed to GitHub Pages and every single script and stylesheet 404'd. GitHub Pages serves a project site from `/PeerScholar/`, but Next.js was writing asset paths from `/`. Fixed by setting `basePath`.
+The site deployed to GitHub Pages and every script and stylesheet 404'd. GitHub Pages serves a project site from `/PeerScholar/`, but Next.js was still writing asset paths off `/`. Fixed it by setting `basePath`.
 
-Google Sign-In worked perfectly on localhost and failed on the live site. Firebase only allows sign-in from domains on an allowlist, and I'd never added the GitHub Pages one.
+Google Sign-In worked flawlessly on localhost, then broke completely on the live site. Turns out Firebase only allows sign-in from domains you've explicitly allowlisted, and I'd never added the GitHub Pages domain.
 
 ## Repo structure
 
@@ -57,7 +57,7 @@ PeerScholar/
     └── android/        Native Kotlin/Jetpack Compose app
 ```
 
-One Firebase project and one data model (see [docs/FIRESTORE_SCHEMA.md](docs/FIRESTORE_SCHEMA.md)) behind three separate front ends. As above, these are three real native codebases, not one cross-platform codebase wrapped three ways.
+One Firebase project, one data model (see [docs/FIRESTORE_SCHEMA.md](docs/FIRESTORE_SCHEMA.md)), behind three separate front ends. Worth repeating: these are three real native codebases, not one cross-platform codebase wrapped up three ways.
 
 ## Tech stack
 
@@ -68,8 +68,8 @@ One Firebase project and one data model (see [docs/FIRESTORE_SCHEMA.md](docs/FIR
 | iOS | Native Swift + SwiftUI, Xcode project generated by XcodeGen from `apps/ios/project.yml` |
 | Android | Native Kotlin + Jetpack Compose, standard Gradle/Android Studio project |
 | Shared code | `packages/shared`, TypeScript types & constants used by the website |
-| Payments | Stripe Connect for marketplace payouts. Planned, see roadmap |
-| Live video | Daily.co or LiveKit. Planned, see roadmap |
+| Payments | Stripe Connect for marketplace payouts — planned, see roadmap |
+| Live video | Daily.co or LiveKit — planned, see roadmap |
 
 ## Getting started
 
@@ -94,20 +94,20 @@ cp .env.local.example .env.local   # fill in your Firebase web app config
 npm run dev
 ```
 
-Visit `http://localhost:3000`. It ships with mock data and sign-in disabled, so you can click through the whole thing without setting up Firebase at all.
+Visit `http://localhost:3000`. It ships with mock data and sign-in disabled by default, so you can click through the whole thing without touching Firebase at all.
 
 ### 3. Run the iOS app
 
-See [apps/ios/README.md](apps/ios/README.md). Open `PeerScholar.xcodeproj` in Xcode, add your `GoogleService-Info.plist`, run.
+See [apps/ios/README.md](apps/ios/README.md). Open `PeerScholar.xcodeproj` in Xcode, drop in your `GoogleService-Info.plist`, hit run.
 
 ### 4. Run the Android app
 
-See [apps/android/README.md](apps/android/README.md). Open `apps/android` in Android Studio, add your `google-services.json`, run.
+See [apps/android/README.md](apps/android/README.md). Open `apps/android` in Android Studio, drop in your `google-services.json`, hit run.
 
 ## Where things stand
 
-It's an early MVP. All three clients work today, running on mock data, with real Google Sign-In once you add your own Firebase config. Enrolling in a course, working through lessons and booking a live session all work end to end. Payments and live video are designed into the data model but aren't connected to a live processor yet.
+It's an early MVP. All three clients work today on mock data, with real Google Sign-In once you plug in your own Firebase config. Enrolling in a course, working through lessons, booking a live session — all of that works end to end. Payments and live video are baked into the data model but not wired up to an actual processor yet.
 
-The part I'm least happy with is the animation between screens. Individual screens look how I wanted, but the transitions and the overall flow from one to the next still feel stiff, especially on mobile, and that's the difference between something that looks like an app and something that feels like one. It's the first thing I want to go back and fix.
+Honestly, the part I'm least happy with is the animation between screens. Each screen individually looks how I wanted, but the transitions between them, the overall flow, still feel stiff — especially on mobile. That's the difference between something that *looks* like an app and something that *feels* like one, and it's the first thing I want to go fix.
 
 [docs/ROADMAP.md](docs/ROADMAP.md) has the rest of what's planned.
